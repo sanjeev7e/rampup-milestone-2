@@ -1,0 +1,37 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ZoodPay APIs",
+    "description": "ZoodPay API Documentation",
+    "version": "1.0.11"
+  },
+  "servers": [
+    {
+      "url": "https://apis.dev.zood-pay.net/products"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Tag Here",
+      "description": "Description Here",
+      "externalDocs": {
+        "description": "ZoodPay (Service Name Here)",
+        "url": "https://dev.zood-pay.net/"
+      }
+    }
+  ],
+  "paths": {
+    "/": {}
+  },
+  "components": {
+    "schemas": {},
+    "securitySchemes": {
+      "api_key": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header",
+        "description": "Bearer Token"
+      }
+    }
+  }
+}

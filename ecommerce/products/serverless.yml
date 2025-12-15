@@ -1,0 +1,89 @@
+service: products
+frameworkVersion: "3"
+useDotenv: true
+deprecationNotificationMode: error
+disabledDeprecations:
+  - UNSUPPORTED_CLI_OPTIONS
+  - CLI_OPTIONS_SCHEMA_V3
+  - CONFIG_VALIDATION_MODE_DEFAULT_V3
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  layers:
+    - ${ssm:NODE_LAYER}
+  deploymentBucket:
+    name: ${ssm:DEPLOYMENT_BUCKET}
+    maxPreviousDeploymentArtifacts: 10
+    blockPublicAccess: true
+  stage: ${opt:stage, 'dev'}
+  region: ${env:REGION}
+  versionFunctions: false
+
+  environment:
+    REGION: ${env:REGION}
+    DEBUG: ${env:DEBUG}
+    STAGE: ${self:provider.stage}
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - cognito-idp:*
+          Resource: "*"
+
+package:
+  patterns:
+    - dist/** # Include only compiled JS files
+    - templates/** # Include html templates
+    - "!node_modules/**" # Exclude dependencies
+    - "!lib/**" # Exclude raw TypeScript files in lib
+    - "!entities/**" # Exclude raw TypeScript files in entities
+    - "!.git/**" # Exclude Git metadata
+    - "!docs/**" # Exclude documentation
+    - "!**/*.ts" # Exclude all TypeScript files
+    - "!tsconfig.json" # Exclude tsconfig.json
+
+custom:
+  # Scripts to build project when deploying and running SLS Offline
+  scripts:
+    hooks:
+      # Run before the packaging process
+      "package:initialize": |
+        # Navigate to the root directory and run ts-build.sh
+        echo "Building service before deployment - Running ts-build.sh"
+        cd ../../../ || { echo "Failed to navigate to the project root"; exit 1; }
+        echo "Current directory: $(pwd)"
+
+        # Run the ts-build.sh script
+        chmod +x ts-build.sh || { echo "Failed to make ts-build.sh executable"; exit 1; }
+        ./ts-build.sh interface ${self:service} || { echo "Build for ${self:service} failed"; exit 1; }
+        echo "Build completed for ${self:service}"
+
+      # Run before invoking serverless offline
+      "before:offline:start": |
+        # Navigate to the root directory and run ts-build.sh
+        echo "Building service before deployment - Running ts-build.sh"
+        cd ../../../ || { echo "Failed to navigate to the project root"; exit 1; }
+        echo "Current directory: $(pwd)"
+
+        # Run the ts-build.sh script
+        chmod +x ts-build.sh || { echo "Failed to make ts-build.sh executable"; exit 1; }
+        ./ts-build.sh interface ${self:service} || { echo "Build for ${self:service} failed"; exit 1; }
+        echo "Build completed for ${self:service}"
+
+  customDomain:
+    rest:
+      domainName: ${ssm:DOMAIN_NAME}
+      stage: ${opt:stage, self:provider.stage}
+      basePath: ${self:service}
+      certificateName: ${ssm:DOMAIN_CERTIFICATE}
+      createRoute53Record: true
+      securityPolicy: tls_1_2
+      endpointType: REGIONAL
+
+plugins:
+  - serverless-offline
+  - serverless-domain-manager
+  - serverless-plugin-scripts
