@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { dynamoDb } from "@utils/dynamodb";
-import { response } from "@utils/response";
+import { dynamoDb } from "../utils/dynamodb";
+import { response } from "../utils/response";
 import { Product, ProductListItem } from "../entities/Product";
 
 /**
