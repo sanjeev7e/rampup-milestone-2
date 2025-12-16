@@ -37,9 +37,6 @@ build_resources() {
     return
   fi
 
-  # Copy lib files and entities before building
-  copy_lib_and_entities "$resources_dir"
-
   # Navigate to the resources directory and build
   echo "Building resources..."
   (cd "$resources_dir" && "$TSC_BIN" --project "$tsconfig")
@@ -48,9 +45,6 @@ build_resources() {
   else
     echo "Build failed for resources."
   fi
-
-  # Delete the copied folders
-  delete_lib_and_entities "$resources_dir"
 }
 
 # Iterate through all services
