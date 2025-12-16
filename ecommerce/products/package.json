@@ -1,0 +1,36 @@
+{
+  "name": "products-service",
+  "version": "1.0.0",
+  "description": "E-Commerce Products Service with CRUD operations",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "deploy": "serverless deploy",
+    "offline": "serverless offline",
+    "remove": "serverless remove"
+  },
+  "keywords": [
+    "serverless",
+    "lambda",
+    "dynamodb",
+    "products",
+    "ecommerce"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.700.0",
+    "@aws-sdk/lib-dynamodb": "^3.700.0",
+    "uuid": "^11.0.3"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.145",
+    "@types/node": "^22.10.2",
+    "@types/uuid": "^10.0.0",
+    "serverless": "^3.39.0",
+    "serverless-domain-manager": "^7.4.0",
+    "serverless-offline": "^13.8.1",
+    "serverless-plugin-scripts": "^1.0.2",
+    "typescript": "^5.7.2"
+  }
+}

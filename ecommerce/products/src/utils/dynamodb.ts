@@ -1,0 +1,88 @@
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import {
+  DynamoDBDocumentClient,
+  PutCommand,
+  GetCommand,
+  ScanCommand,
+  UpdateCommand,
+  DeleteCommand,
+} from "@aws-sdk/lib-dynamodb";
+
+const client = new DynamoDBClient({ region: process.env.REGION });
+const docClient = DynamoDBDocumentClient.from(client);
+
+const TABLE_NAME = process.env.PRODUCTS_TABLE || "Products";
+
+export const dynamoDb = {
+  /**
+   * Put an item into DynamoDB
+   */
+  put: async (item: any) => {
+    const command = new PutCommand({
+      TableName: TABLE_NAME,
+      Item: item,
+    });
+    return await docClient.send(command);
+  },
+
+  /**
+   * Get an item by ID
+   */
+  get: async (id: string) => {
+    const command = new GetCommand({
+      TableName: TABLE_NAME,
+      Key: { id },
+    });
+    const result = await docClient.send(command);
+    return result.Item;
+  },
+
+  /**
+   * Scan all items (for listing)
+   */
+  scan: async () => {
+    const command = new ScanCommand({
+      TableName: TABLE_NAME,
+    });
+    const result = await docClient.send(command);
+    return result.Items || [];
+  },
+
+  /**
+   * Update an item
+   */
+  update: async (id: string, updates: any) => {
+    const updateExpression: string[] = [];
+    const expressionAttributeNames: any = {};
+    const expressionAttributeValues: any = {};
+
+    Object.keys(updates).forEach((key, index) => {
+      updateExpression.push(`#attr${index} = :val${index}`);
+      expressionAttributeNames[`#attr${index}`] = key;
+      expressionAttributeValues[`:val${index}`] = updates[key];
+    });
+
+    const command = new UpdateCommand({
+      TableName: TABLE_NAME,
+      Key: { id },
+      UpdateExpression: `SET ${updateExpression.join(", ")}`,
+      ExpressionAttributeNames: expressionAttributeNames,
+      ExpressionAttributeValues: expressionAttributeValues,
+      ReturnValues: "ALL_NEW",
+    });
+
+    const result = await docClient.send(command);
+    return result.Attributes;
+  },
+
+  /**
+   * Delete an item
+   */
+  delete: async (id: string) => {
+    const command = new DeleteCommand({
+      TableName: TABLE_NAME,
+      Key: { id },
+    });
+    return await docClient.send(command);
+  },
+};

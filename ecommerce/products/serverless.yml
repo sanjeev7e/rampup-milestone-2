@@ -10,12 +10,12 @@ disabledDeprecations:
 provider:
   name: aws
   runtime: nodejs20.x
-  layers:
-    - ${ssm:NODE_LAYER}
-  deploymentBucket:
-    name: ${ssm:DEPLOYMENT_BUCKET}
-    maxPreviousDeploymentArtifacts: 10
-    blockPublicAccess: true
+  # layers:
+  #   - ${ssm:NODE_LAYER}
+  # deploymentBucket:
+  #   name: ${ssm:DEPLOYMENT_BUCKET}
+  #   maxPreviousDeploymentArtifacts: 10
+  #   blockPublicAccess: true
   stage: ${opt:stage, 'dev'}
   region: ${env:REGION}
   versionFunctions: false
@@ -24,6 +24,7 @@ provider:
     REGION: ${env:REGION}
     DEBUG: ${env:DEBUG}
     STAGE: ${self:provider.stage}
+    PRODUCTS_TABLE: ${self:service}-${self:provider.stage}
 
   iam:
     role:
@@ -32,6 +33,16 @@ provider:
           Action:
             - cognito-idp:*
           Resource: "*"
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - dynamodb:Scan
+            - dynamodb:Query
+          Resource:
+            - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.PRODUCTS_TABLE}"
 
 package:
   patterns:
@@ -53,7 +64,7 @@ custom:
       "package:initialize": |
         # Navigate to the root directory and run ts-build.sh
         echo "Building service before deployment - Running ts-build.sh"
-        cd ../../../ || { echo "Failed to navigate to the project root"; exit 1; }
+        cd ../ || { echo "Failed to navigate to the project root"; exit 1; }
         echo "Current directory: $(pwd)"
 
         # Run the ts-build.sh script
@@ -65,7 +76,7 @@ custom:
       "before:offline:start": |
         # Navigate to the root directory and run ts-build.sh
         echo "Building service before deployment - Running ts-build.sh"
-        cd ../../../ || { echo "Failed to navigate to the project root"; exit 1; }
+        cd ../ || { echo "Failed to navigate to the project root"; exit 1; }
         echo "Current directory: $(pwd)"
 
         # Run the ts-build.sh script
@@ -75,10 +86,10 @@ custom:
 
   customDomain:
     rest:
-      domainName: ${ssm:DOMAIN_NAME}
+      domainName: "localhost" # ${ssm:DOMAIN_NAME}
       stage: ${opt:stage, self:provider.stage}
       basePath: ${self:service}
-      certificateName: ${ssm:DOMAIN_CERTIFICATE}
+      certificateName: "offline-cert" # ${ssm:DOMAIN_CERTIFICATE}
       createRoute53Record: true
       securityPolicy: tls_1_2
       endpointType: REGIONAL
@@ -87,3 +98,67 @@ plugins:
   - serverless-offline
   - serverless-domain-manager
   - serverless-plugin-scripts
+
+functions:
+  createProduct:
+    handler: dist/handlers/createProduct.handler
+    events:
+      - http:
+          path: products
+          method: post
+          cors: true
+
+  getAllProducts:
+    handler: dist/handlers/getAllProducts.handler
+    events:
+      - http:
+          path: products
+          method: get
+          cors: true
+
+  getProductById:
+    handler: dist/handlers/getProductById.handler
+    events:
+      - http:
+          path: products/{id}
+          method: get
+          cors: true
+
+  updateProduct:
+    handler: dist/handlers/updateProduct.handler
+    events:
+      - http:
+          path: products/{id}
+          method: put
+          cors: true
+      - http:
+          path: products/{id}
+          method: patch
+          cors: true
+
+  deleteProduct:
+    handler: dist/handlers/deleteProduct.handler
+    events:
+      - http:
+          path: products/{id}
+          method: delete
+          cors: true
+
+resources:
+  Resources:
+    ProductsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.PRODUCTS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        Tags:
+          - Key: Environment
+            Value: ${self:provider.stage}
+          - Key: Service
+            Value: ${self:service}

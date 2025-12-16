@@ -1,48 +1,8 @@
 #!/bin/bash
 
 # Get the root directory where node_modules is located
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(pwd)"
 TSC_BIN="$ROOT_DIR/node_modules/typescript/bin/tsc"
-
-# Define the source folders and destination name
-SOURCE_FOLDER_LIB="lib"
-SOURCE_FOLDER_ENTITIES="entities"
-
-# Copying Lib and Entities folders
-copy_lib_and_entities() {
-  local service_dir=$1
-  DESTINATION_NAME="$service_dir/src"
-  # Check if the source folders exist
-  if [ ! -d "$SOURCE_FOLDER_LIB" ]; then
-    echo "Source folder '$SOURCE_FOLDER_LIB' does not exist. Exiting."
-    exit 1
-  fi
-
-  if [ ! -d "$SOURCE_FOLDER_ENTITIES" ]; then
-    echo "Source folder '$SOURCE_FOLDER_ENTITIES' does not exist. Exiting."
-    exit 1
-  fi
-
-  # Copy the source folders into the service directory
-  echo "Copying source folders..."
-  echo "Copying from: $SOURCE_FOLDER_LIB -> $DESTINATION_NAME"
-  cp -r "$SOURCE_FOLDER_LIB" "$DESTINATION_NAME"
-  echo "Copying from: $SOURCE_FOLDER_ENTITIES -> $DESTINATION_NAME"
-  cp -r "$SOURCE_FOLDER_ENTITIES" "$DESTINATION_NAME"
-}
-
-# Delete Lib and Entities folders
-delete_lib_and_entities() {
-  local service_dir=$1
-  DESTINATION_NAME="$service_dir/src"
-  # Delete the copied folders
-  echo "Cleaning up..."
-  echo "Removing folder: $DESTINATION_NAME/$(basename "$SOURCE_FOLDER_LIB")"
-  rm -rf "$DESTINATION_NAME/$(basename "$SOURCE_FOLDER_LIB")"
-  echo "Removing folder: $DESTINATION_NAME/$(basename "$SOURCE_FOLDER_ENTITIES")"
-  rm -rf "$DESTINATION_NAME/$(basename "$SOURCE_FOLDER_ENTITIES")"
-  echo "Cleanup complete. Removed the copied folders."
-}
 
 # Build a specific service
 build_service() {
@@ -57,9 +17,6 @@ build_service() {
     return
   fi
 
-  # Copy lib files and entities before building
-  copy_lib_and_entities "$service_dir"
-
   # Navigate to the service directory and build
   echo "Building $service..."
   (cd "$service_dir" && "$TSC_BIN" --project tsconfig.json)
@@ -68,9 +25,6 @@ build_service() {
   else
     echo "Build failed for $service."
   fi
-
-  # Delete the copied folders
-  delete_lib_and_entities "$service_dir"
 }
 
 build_resources() {
