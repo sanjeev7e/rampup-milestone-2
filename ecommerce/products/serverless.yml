@@ -48,7 +48,7 @@ package:
   patterns:
     - dist/** # Include only compiled JS files
     - templates/** # Include html templates
-    - "!node_modules/**" # Exclude dependencies
+    # - "!node_modules/**" # Exclude dependencies
     - "!lib/**" # Exclude raw TypeScript files in lib
     - "!entities/**" # Exclude raw TypeScript files in entities
     - "!.git/**" # Exclude Git metadata
@@ -84,19 +84,19 @@ custom:
         ./ts-build.sh interface ${self:service} || { echo "Build for ${self:service} failed"; exit 1; }
         echo "Build completed for ${self:service}"
 
-  customDomain:
-    rest:
-      domainName: "localhost" # ${ssm:DOMAIN_NAME}
-      stage: ${opt:stage, self:provider.stage}
-      basePath: ${self:service}
-      certificateName: "offline-cert" # ${ssm:DOMAIN_CERTIFICATE}
-      createRoute53Record: true
-      securityPolicy: tls_1_2
-      endpointType: REGIONAL
+  # customDomain:
+  #   rest:
+  #     domainName: "localhost" # ${ssm:DOMAIN_NAME}
+  #     stage: ${opt:stage, self:provider.stage}
+  #     basePath: ${self:service}
+  #     certificateName: "offline-cert" # ${ssm:DOMAIN_CERTIFICATE}
+  #     createRoute53Record: true
+  #     securityPolicy: tls_1_2
+  #     endpointType: REGIONAL
 
 plugins:
   - serverless-offline
-  - serverless-domain-manager
+  # - serverless-domain-manager
   - serverless-plugin-scripts
 
 functions:
