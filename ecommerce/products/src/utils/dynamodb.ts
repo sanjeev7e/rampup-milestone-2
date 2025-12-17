@@ -7,8 +7,13 @@ import {
   UpdateCommand,
   DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
+import { fromEnv } from "@aws-sdk/credential-providers";
 
-const client = new DynamoDBClient({ region: process.env.REGION });
+// Explicitly use environment variables or credentials file, bypassing SSO
+const client = new DynamoDBClient({
+  region: process.env.REGION,
+  credentials: fromEnv(),
+});
 const docClient = DynamoDBDocumentClient.from(client);
 
 const TABLE_NAME = process.env.PRODUCTS_TABLE || "Products";
