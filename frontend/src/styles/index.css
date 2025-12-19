@@ -28,14 +28,22 @@
   --color-on-error: #FFFFFF;
   --color-on-error-container: #410002;
 
+  --color-background: #F2F2FF;
+
   --color-surface: #F8F9FF;
+  --color-surface-variant: #DDE2F4;
   --color-on-surface: #191C20;
   --color-surface-container: #F0F4FC;
+  --color-inverse-on-surface: #EEF0FB;
+  --color-inverse-on-surface-variant: #414754;
+
+  --color-outline: #717786;
+  --color-text-color: #21252C;
 }
 
 body {
   margin: 0;
   font-family: var(--font-poppins);
-  background-color: var(--color-surface);
+  background-color: var(--color-background);
   color: var(--color-on-surface);
 }

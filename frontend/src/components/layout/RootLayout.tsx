@@ -1,3 +1,4 @@
+import { Divider } from "@mui/material";
 import { logos } from "../../constants/static/images";
 
 export default function RootLayout({
@@ -5,16 +6,17 @@ export default function RootLayout({
   header,
   sidebar,
 }: {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   header?: React.ReactNode;
   sidebar?: React.ReactNode;
 }) {
   return (
     <div className='flex h-screen'>
       {sidebar && (
-        <aside className='w-[200px] bg-surface-variant overflow-hidden'>
+        <aside className='bg-surface-variant overflow-auto px-6 py-6 flex flex-col gap-10'>
           <img src={logos.app_logo_main} alt='app logo' />
-          <div className='h-full overflow-auto'>{sidebar}</div>
+          <Divider className='bg-outline' />
+          <div className='flex-1'>{sidebar}</div>
         </aside>
       )}
       <div className='flex-1 flex flex-col h-full'>
