@@ -1,5 +1,6 @@
 import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
 import AdminLayout from "../components/layout/AdminLayout";
+import ListProductsScreen from "../pages/admin/products/ListProductsScreen";
 
 const router = createBrowserRouter([
   {
@@ -20,7 +21,25 @@ const router = createBrowserRouter([
       },
       {
         path: "products",
-        element: <div className='p-4'>Products</div>,
+        element: <Outlet />,
+        children: [
+          {
+            index: true,
+            element: <ListProductsScreen />,
+          },
+          {
+            path: "add",
+            element: <div className='p-4'>Add Product</div>,
+          },
+          {
+            path: "edit/:id",
+            element: <div className='p-4'>Edit Product</div>,
+          },
+          {
+            path: "view/:id",
+            element: <div className='p-4'>View Product</div>,
+          },
+        ],
       },
       {
         path: "vendors",
