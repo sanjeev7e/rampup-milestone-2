@@ -9,16 +9,18 @@ export default function AdminProductsListCard({
   category,
   price,
   image,
+  onClick,
 }: {
   name: string;
   brand: string;
   category: string;
   price: number;
   image: string;
+  onClick?: () => void;
 }) {
   return (
     <div className='relative w-fit'>
-      <AppCard>
+      <AppCard onClick={onClick}>
         <CardMedia
           component='img'
           className='object-cover w-[195px] h-[195px]'

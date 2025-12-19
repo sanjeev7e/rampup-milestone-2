@@ -5,8 +5,10 @@ import { Tune, Search } from "@mui/icons-material";
 import { InputAdornment } from "@mui/material";
 import { illustrations } from "../../../constants/static/images";
 import AdminProductsListCard from "../../../components/app/AdminProductsListCard";
+import { useNavigate } from "react-router-dom";
 
 export default function ListProductsScreen() {
+  const navigate = useNavigate();
   return (
     <div className='p-4 space-y-6'>
       <h2 className='text-2xl font-medium'>Product List</h2>
@@ -45,6 +47,7 @@ export default function ListProductsScreen() {
             category={`Category ${index + 1}`}
             name={`Product ${index + 1}`}
             price={10 + index}
+            onClick={() => navigate(`/admin/products/view/${index + 1}`)}
           />
         ))}
       </div>
