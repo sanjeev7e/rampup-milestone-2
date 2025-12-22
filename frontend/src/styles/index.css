@@ -9,6 +9,7 @@
 
   /* Colors - Light Theme based on M3 guidance */
   --color-primary: #0468D5;
+  --color-inverse-primary: #ADC7FF;
   --color-primary-container: #CEE5FF;
   --color-on-primary: #FFFFFF;
   --color-on-primary-container: #001D33;
