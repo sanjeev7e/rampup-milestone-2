@@ -1,6 +1,6 @@
 import AppCard from "../../../components/ui/AppCard";
 import { useState, useCallback } from "react";
-import { Divider } from "@mui/material";
+import { Divider, CircularProgress, Alert } from "@mui/material";
 import {
   OutboxOutlined,
   CloseOutlined,
@@ -11,12 +11,12 @@ import AppSelect from "../../../components/ui/AppSelect";
 import AppCheckbox from "../../../components/ui/AppCheckbox";
 import AppButton from "../../../components/ui/AppButton";
 import AppDropZone from "../../../components/ui/AppDropZone";
-import {
-  useFileUpload,
-  formatFileSize,
-  FileData,
-} from "../../../hooks/useFileUpload";
+import { useFileUpload, formatFileSize } from "../../../hooks/useFileUpload";
+import type { FileData } from "../../../hooks/useFileUpload";
 import { icons } from "../../../constants/static/images";
+import { useNavigate } from "react-router-dom";
+import { useCreateProduct } from "../../../hooks/useProducts";
+import type { CreateProductRequest } from "../../../types/products";
 
 interface BrochureFile {
   name: string;
@@ -24,13 +24,126 @@ interface BrochureFile {
   url: string;
 }
 
+// Form options
+const CATEGORY_OPTIONS = [
+  "Electronics",
+  "Clothing",
+  "Food",
+  "Chemicals",
+  "Other",
+];
+const FORM_OPTIONS = ["Solid", "Liquid", "Powder", "Gas"];
+const SAFETY_OPTIONS = [
+  "Flammable",
+  "Non-Flammable",
+  "Corrosive",
+  "Toxic",
+  "Safe",
+];
+const UOM_OPTIONS = ["Per Unit", "Per Kg", "Per Liter", "Per Meter", "Per Box"];
+
+// Initial form state
+const initialFormState: CreateProductRequest = {
+  productName: "",
+  productCategory: "",
+  productDescription: "",
+  form: "",
+  safety: "",
+  uom: "",
+  ratePerUnit: 0,
+  marketSellingPrice: 0,
+  saleProfitMargin: 0,
+  productType: "",
+  productSize: "",
+  productColor: "",
+  productVariant: "",
+  ecoFriendly: false,
+  handleWithCare: false,
+  productImage: "",
+  additionalImages: [],
+  productBrochure: "",
+};
+
 export default function AddEditProductScreen() {
+  const navigate = useNavigate();
+  const [formData, setFormData] =
+    useState<CreateProductRequest>(initialFormState);
   const [productImages, setProductImages] = useState<string[]>([]);
   const [brochureFile, setBrochureFile] = useState<BrochureFile | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const createMutation = useCreateProduct({
+    onSuccess: () => {
+      navigate("/admin/products");
+    },
+    onError: (err) => {
+      setError(err.getUserMessage());
+    },
+  });
+
+  // Update form field
+  const updateField = <K extends keyof CreateProductRequest>(
+    field: K,
+    value: CreateProductRequest[K]
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Handle form submission
+  const handleSubmit = () => {
+    setError(null);
+
+    // Basic validation
+    if (!formData.productName.trim()) {
+      setError("Product name is required");
+      return;
+    }
+    if (!formData.productCategory) {
+      setError("Product category is required");
+      return;
+    }
+    if (!formData.productDescription.trim()) {
+      setError("Product description is required");
+      return;
+    }
+    if (!formData.form) {
+      setError("Form is required");
+      return;
+    }
+    if (!formData.safety) {
+      setError("Safety is required");
+      return;
+    }
+    if (!formData.uom) {
+      setError("UOM is required");
+      return;
+    }
+
+    // Prepare data with images
+    const submitData: CreateProductRequest = {
+      ...formData,
+      productImage: productImages[0] || "",
+      additionalImages: productImages.slice(1),
+      productBrochure: brochureFile?.url || "",
+    };
+
+    createMutation.mutate(submitData);
+  };
 
   return (
     <div className='flex-1 space-y-10 overflow-x-hidden'>
       <div className='flex-1 p-4'>
+        {/* Error Alert */}
+        {error && (
+          <Alert
+            severity='error'
+            className='mb-4'
+            onClose={() => setError(null)}
+          >
+            {error}
+          </Alert>
+        )}
+
         <div className='flex gap-4'>
           <AppCard className='w-1/2 p-5 bg-surface!'>
             <h1 className='text-xl font-medium mb-3'>Upload Product Image</h1>
@@ -48,56 +161,70 @@ export default function AddEditProductScreen() {
               </h1>
               <Divider className='mb-5!' />
               <div className='flex flex-col gap-5 mb-5'>
-                <AppTextField label='Product Name' />
+                <AppTextField
+                  label='Product Name'
+                  value={formData.productName}
+                  onChange={(e) => updateField("productName", e.target.value)}
+                  required
+                />
                 <AppSelect
                   label='Product Category'
-                  options={["Option 1", "Option 2"]}
-                  value={""}
-                  onChange={(value: string) => {
-                    console.log(value);
-                  }}
+                  options={CATEGORY_OPTIONS}
+                  value={formData.productCategory}
+                  onChange={(value: string) =>
+                    updateField("productCategory", value)
+                  }
                 />
                 <AppTextField
                   label='Product Description'
                   multiline
                   minRows={5}
+                  value={formData.productDescription}
+                  onChange={(e) =>
+                    updateField("productDescription", e.target.value)
+                  }
+                  required
                 />
               </div>
             </div>
             <div>
               <h1 className='text-xl font-medium mb-3'>
-                Additional Product Atributes
+                Additional Product Attributes
               </h1>
               <Divider className='mb-5!' />
               <div className='grid grid-cols-2 gap-5 mb-5'>
                 <AppSelect
                   label='Form'
-                  options={["Option 1", "Option 2"]}
-                  value={""}
-                  onChange={(value: string) => {
-                    console.log(value);
-                  }}
+                  options={FORM_OPTIONS}
+                  value={formData.form}
+                  onChange={(value: string) => updateField("form", value)}
                 />
                 <AppSelect
                   label='Safety'
-                  options={["Option 1", "Option 2"]}
-                  value={""}
-                  onChange={(value: string) => {
-                    console.log(value);
-                  }}
+                  options={SAFETY_OPTIONS}
+                  value={formData.safety}
+                  onChange={(value: string) => updateField("safety", value)}
                 />
                 <AppSelect
                   label='UOM'
-                  options={["Option 1", "Option 2"]}
-                  value={""}
-                  onChange={(value: string) => {
-                    console.log(value);
-                  }}
+                  options={UOM_OPTIONS}
+                  value={formData.uom}
+                  onChange={(value: string) => updateField("uom", value)}
                 />
               </div>
               <div>
-                <AppCheckbox label='Eco Friendly' />
-                <AppCheckbox label='Handle with Care' />
+                <AppCheckbox
+                  label='Eco Friendly'
+                  checked={formData.ecoFriendly}
+                  onChange={(e) => updateField("ecoFriendly", e.target.checked)}
+                />
+                <AppCheckbox
+                  label='Handle with Care'
+                  checked={formData.handleWithCare}
+                  onChange={(e) =>
+                    updateField("handleWithCare", e.target.checked)
+                  }
+                />
               </div>
             </div>
             <div>
@@ -106,9 +233,30 @@ export default function AddEditProductScreen() {
               </h1>
               <Divider className='mb-5!' />
               <div className='grid grid-cols-2 gap-5 mb-5'>
-                <AppTextField label='Rate per Unit' />
-                <AppTextField label='Market Selling Price' />
-                <AppTextField label='Sale Profit Margin' />
+                <AppTextField
+                  label='Rate per Unit'
+                  type='number'
+                  value={formData.ratePerUnit || ""}
+                  onChange={(e) =>
+                    updateField("ratePerUnit", Number(e.target.value))
+                  }
+                />
+                <AppTextField
+                  label='Market Selling Price'
+                  type='number'
+                  value={formData.marketSellingPrice || ""}
+                  onChange={(e) =>
+                    updateField("marketSellingPrice", Number(e.target.value))
+                  }
+                />
+                <AppTextField
+                  label='Sale Profit Margin (%)'
+                  type='number'
+                  value={formData.saleProfitMargin || ""}
+                  onChange={(e) =>
+                    updateField("saleProfitMargin", Number(e.target.value))
+                  }
+                />
               </div>
             </div>
             <div>
@@ -117,10 +265,28 @@ export default function AddEditProductScreen() {
               </h1>
               <Divider className='mb-5!' />
               <div className='grid grid-cols-2 gap-5 mb-5'>
-                <AppTextField label='Product Type' />
-                <AppTextField label='Product  Size(L*W*H)' />
-                <AppTextField label='Product Variant' />
-                <AppTextField label='Product Color' />
+                <AppTextField
+                  label='Product Type'
+                  value={formData.productType || ""}
+                  onChange={(e) => updateField("productType", e.target.value)}
+                />
+                <AppTextField
+                  label='Product Size (L*W*H)'
+                  value={formData.productSize || ""}
+                  onChange={(e) => updateField("productSize", e.target.value)}
+                />
+                <AppTextField
+                  label='Product Variant'
+                  value={formData.productVariant || ""}
+                  onChange={(e) =>
+                    updateField("productVariant", e.target.value)
+                  }
+                />
+                <AppTextField
+                  label='Product Color'
+                  value={formData.productColor || ""}
+                  onChange={(e) => updateField("productColor", e.target.value)}
+                />
               </div>
             </div>
             <div>
@@ -132,6 +298,29 @@ export default function AddEditProductScreen() {
                 file={brochureFile}
                 onFileChange={setBrochureFile}
               />
+            </div>
+
+            {/* Submit Button */}
+            <div className='flex justify-end gap-4 pt-4'>
+              <AppButton
+                variant='outlined'
+                onClick={() => navigate("/admin/products")}
+                disabled={createMutation.isPending}
+              >
+                Cancel
+              </AppButton>
+              <AppButton
+                variant='contained'
+                onClick={handleSubmit}
+                disabled={createMutation.isPending}
+                startIcon={
+                  createMutation.isPending ? (
+                    <CircularProgress size={20} />
+                  ) : undefined
+                }
+              >
+                {createMutation.isPending ? "Creating..." : "Create Product"}
+              </AppButton>
             </div>
           </AppCard>
         </div>
