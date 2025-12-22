@@ -12,7 +12,7 @@ export default function AdminProductsListCard({
   onClick,
 }: {
   name: string;
-  brand: string;
+  brand?: string;
   category: string;
   price: number;
   image: string;
