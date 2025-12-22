@@ -3,10 +3,7 @@ import { cn } from "../../utils/cn";
 
 export default function AppCard({ className, children, ...props }: CardProps) {
   return (
-    <Card
-      {...props}
-      className={cn("bg-white! h-fit w-fit shadow-soft!", className)}
-    >
+    <Card {...props} className={cn("bg-white! h-fit shadow-soft!", className)}>
       {children}
     </Card>
   );

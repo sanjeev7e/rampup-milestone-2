@@ -1,6 +1,7 @@
 import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
 import AdminLayout from "../components/layout/AdminLayout";
 import ListProductsScreen from "../pages/admin/products/ListProductsScreen";
+import ViewProductScreen from "../pages/admin/products/ViewProductScreen";
 
 const router = createBrowserRouter([
   {
@@ -37,7 +38,7 @@ const router = createBrowserRouter([
           },
           {
             path: "view/:id",
-            element: <div className='p-4'>View Product</div>,
+            element: <ViewProductScreen />,
           },
         ],
       },
