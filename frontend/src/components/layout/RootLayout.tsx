@@ -1,5 +1,6 @@
 import { Divider } from "@mui/material";
 import { logos } from "../../constants/static/images";
+import { useNavigate } from "react-router-dom";
 
 export default function RootLayout({
   children,
@@ -10,11 +11,18 @@ export default function RootLayout({
   header?: React.ReactNode;
   sidebar?: React.ReactNode;
 }) {
+  const navigate = useNavigate();
+
   return (
     <div className='flex h-screen overflow-hidden'>
       {sidebar && (
         <aside className='bg-surface-variant overflow-auto px-6 py-6 flex flex-col gap-10 min-w-[200px]'>
-          <img src={logos.app_logo_main} alt='app logo' />
+          <img
+            src={logos.app_logo_main}
+            alt='app logo'
+            className='cursor-pointer'
+            onClick={() => navigate("/")}
+          />
           <Divider className='bg-outline' />
           <div className='flex-1'>{sidebar}</div>
         </aside>

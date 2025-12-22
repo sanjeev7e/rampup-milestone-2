@@ -10,14 +10,15 @@ import {
 import RootLayout from "./RootLayout";
 import { icons } from "../../constants/static/images";
 import AppButton from "../ui/AppButton";
+import { useNavigate } from "react-router-dom";
 
 const menuItems = [
-  { label: "Dashboard", icon: icons.dashboard },
-  { label: "Orders", icon: icons.orders },
-  { label: "Products", icon: icons.products },
-  { label: "Vendors", icon: icons.vendors },
-  { label: "Setting", icon: icons.settings },
-  { label: "Logout", icon: icons.logout },
+  { label: "Dashboard", icon: icons.dashboard, path: "/" },
+  { label: "Orders", icon: icons.orders, path: "/admin/orders" },
+  { label: "Products", icon: icons.products, path: "/admin/products" },
+  { label: "Vendors", icon: icons.vendors, path: "/admin/vendors" },
+  { label: "Setting", icon: icons.settings, path: "/admin/settings" },
+  { label: "Logout", icon: icons.logout, path: "/" },
 ];
 
 export default function AdminLayout({
@@ -46,12 +47,14 @@ function Header() {
 }
 
 function Sidebar() {
+  const navigate = useNavigate();
+
   return (
     <div className='flex flex-col justify-between h-full'>
       <List className='h-full'>
         {menuItems.slice(0, 4).map((item) => (
           <ListItem key={item.label} disablePadding>
-            <ListItemButton>
+            <ListItemButton onClick={() => navigate(item.path)}>
               <ListItemIcon>
                 <img src={item.icon} alt={item.label} />
               </ListItemIcon>
@@ -67,7 +70,7 @@ function Sidebar() {
       <List>
         {menuItems.slice(4).map((item) => (
           <ListItem key={item.label} disablePadding>
-            <ListItemButton>
+            <ListItemButton onClick={() => navigate(item.path)}>
               <ListItemIcon>
                 <img src={item.icon} alt={item.label} />
               </ListItemIcon>
@@ -76,7 +79,7 @@ function Sidebar() {
           </ListItem>
         ))}
       </List>
-      <div className='flex items-center gap-2 mt-4'>
+      <div className='flex items-center gap-2 mt-4 cursor-pointer'>
         <Avatar className='p-4 text-xs! h-5! w-5!'>WW</Avatar>
         <h5 className='text-sm font-semibold text-text-color'>Wade Waren</h5>
       </div>

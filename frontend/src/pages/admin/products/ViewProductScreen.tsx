@@ -8,6 +8,7 @@ import { CardMedia, Divider, InputAdornment } from "@mui/material";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 import AppTabs, { type AppTabItem } from "../../../components/ui/AppTabs";
 import AppTextField from "../../../components/ui/AppTextField";
+import { useNavigate } from "react-router-dom";
 
 const myTabs: AppTabItem[] = [
   {
@@ -38,6 +39,7 @@ const myTabs: AppTabItem[] = [
 
 export default function ViewProductScreen() {
   const [currentTab, setCurrentTab] = useState("1");
+  const navigate = useNavigate();
 
   function handleTabChange(_event: React.SyntheticEvent, newValue: string) {
     setCurrentTab(newValue);
@@ -67,7 +69,12 @@ export default function ViewProductScreen() {
       <AppCard className='flex-1 p-4 bg-surface!'>
         <div className='flex justify-between items-center mb-5'>
           <h1 className='text-2xl font-medium'>Product Detail</h1>
-          <AppButton startIcon={<EditOutlined />}>Edit Product</AppButton>
+          <AppButton
+            startIcon={<EditOutlined />}
+            onClick={() => navigate("/admin/products/add")}
+          >
+            Edit Product
+          </AppButton>
         </div>
 
         <div className='flex gap-4'>
