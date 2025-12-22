@@ -25,6 +25,7 @@ provider:
     DEBUG: ${env:DEBUG}
     STAGE: ${self:provider.stage}
     PRODUCTS_TABLE: ${self:service}-${self:provider.stage}
+    PRODUCTS_BUCKET: ${self:service}-storage-${self:provider.stage}
 
   iam:
     role:
@@ -43,6 +44,12 @@ provider:
             - dynamodb:Query
           Resource:
             - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.PRODUCTS_TABLE}"
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+            - s3:GetObject
+          Resource:
+            - "arn:aws:s3:::${self:provider.environment.PRODUCTS_BUCKET}/*"
 
 package:
   patterns:
@@ -162,3 +169,13 @@ resources:
             Value: ${self:provider.stage}
           - Key: Service
             Value: ${self:service}
+
+    ProductsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.PRODUCTS_BUCKET}
+        CorsConfiguration:
+          CorsRules:
+            - AllowedHeaders: ["*"]
+              AllowedMethods: [GET, PUT, POST, DELETE, HEAD]
+              AllowedOrigins: ["*"]

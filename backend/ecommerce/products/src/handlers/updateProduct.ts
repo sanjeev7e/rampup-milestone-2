@@ -2,6 +2,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { dynamoDb } from "../utils/dynamodb";
 import { response } from "../utils/response";
 import { UpdateProductRequest, Product } from "../entities/Product";
+import { uploadToS3 } from "../utils/s3";
 
 /**
  * Lambda handler to update a product (PUT/PATCH)
@@ -68,12 +69,54 @@ export const handler = async (
       updates.ecoFriendly = requestBody.ecoFriendly;
     if (requestBody.handleWithCare !== undefined)
       updates.handleWithCare = requestBody.handleWithCare;
-    if (requestBody.productImage !== undefined)
-      updates.productImage = requestBody.productImage;
-    if (requestBody.additionalImages !== undefined)
-      updates.additionalImages = requestBody.additionalImages;
-    if (requestBody.productBrochure !== undefined)
-      updates.productBrochure = requestBody.productBrochure;
+    if (requestBody.productImage !== undefined) {
+      if (requestBody.productImage.startsWith("data:")) {
+        const mimeType =
+          requestBody.productImage.match(
+            /^data:([A-Za-z-+\/]+);base64,/
+          )?.[1] || "image/png";
+        updates.productImage = await uploadToS3(
+          requestBody.productImage,
+          mimeType,
+          "products/images"
+        );
+      } else {
+        updates.productImage = requestBody.productImage;
+      }
+    }
+
+    if (requestBody.additionalImages !== undefined) {
+      if (requestBody.additionalImages.length > 0) {
+        updates.additionalImages = await Promise.all(
+          requestBody.additionalImages.map(async (img) => {
+            if (img.startsWith("data:")) {
+              const mimeType =
+                img.match(/^data:([A-Za-z-+\/]+);base64,/)?.[1] || "image/png";
+              return await uploadToS3(img, mimeType, "products/images");
+            }
+            return img; // Keep existing URL
+          })
+        );
+      } else {
+        updates.additionalImages = [];
+      }
+    }
+
+    if (requestBody.productBrochure !== undefined) {
+      if (requestBody.productBrochure.startsWith("data:")) {
+        const mimeType =
+          requestBody.productBrochure.match(
+            /^data:([A-Za-z-+\/]+);base64,/
+          )?.[1] || "application/octet-stream";
+        updates.productBrochure = await uploadToS3(
+          requestBody.productBrochure,
+          mimeType,
+          "products/brochures"
+        );
+      } else {
+        updates.productBrochure = requestBody.productBrochure;
+      }
+    }
 
     // Validate updates
     const errors = validateUpdates(updates);

@@ -14,7 +14,24 @@ export const handler = async (
     console.log("Get All Products Event:", JSON.stringify(event, null, 2));
 
     // Fetch all products from DynamoDB
-    const products = (await dynamoDb.scan()) as Product[];
+    // Extract query string parameters
+    const search = event.queryStringParameters?.search?.toLowerCase();
+    const category = event.queryStringParameters?.category;
+
+    // Fetch all products from DynamoDB
+    let products = (await dynamoDb.scan()) as Product[];
+
+    // Filter by category
+    if (category) {
+      products = products.filter((p) => p.productCategory === category);
+    }
+
+    // Filter by search term (product name)
+    if (search) {
+      products = products.filter((p) =>
+        p.productName.toLowerCase().includes(search)
+      );
+    }
 
     // Transform to optimized list items (only required fields for grid view)
     const productListItems: ProductListItem[] = products.map((product) => ({

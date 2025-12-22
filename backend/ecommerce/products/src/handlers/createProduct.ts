@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { dynamoDb } from "../utils/dynamodb";
 import { response } from "../utils/response";
 import { CreateProductRequest, Product } from "../entities/Product";
+import { uploadToS3 } from "../utils/s3";
 
 /**
  * Lambda handler to create a new product
@@ -45,12 +46,51 @@ export const handler = async (
       productVariant: requestBody.productVariant,
       ecoFriendly: requestBody.ecoFriendly || false,
       handleWithCare: requestBody.handleWithCare || false,
-      productImage: requestBody.productImage,
-      additionalImages: requestBody.additionalImages || [],
-      productBrochure: requestBody.productBrochure,
+      productImage: "",
+      additionalImages: [],
+      productBrochure: "",
       createdAt: now,
       updatedAt: now,
     };
+
+    // Upload files to S3
+    if (requestBody.productImage) {
+      // Default to png if no mime type in base64 string
+      const mimeType =
+        requestBody.productImage.match(/^data:([A-Za-z-+\/]+);base64,/)?.[1] ||
+        "image/png";
+      product.productImage = await uploadToS3(
+        requestBody.productImage,
+        mimeType,
+        "products/images"
+      );
+    }
+
+    if (
+      requestBody.additionalImages &&
+      requestBody.additionalImages.length > 0
+    ) {
+      product.additionalImages = await Promise.all(
+        requestBody.additionalImages.map(async (img) => {
+          const mimeType =
+            img.match(/^data:([A-Za-z-+\/]+);base64,/)?.[1] || "image/png";
+          return await uploadToS3(img, mimeType, "products/images");
+        })
+      );
+    }
+
+    if (requestBody.productBrochure) {
+      // For brochures, try to detect PDF or other doc types, default to binary if unknown
+      const mimeType =
+        requestBody.productBrochure.match(
+          /^data:([A-Za-z-+\/]+);base64,/
+        )?.[1] || "application/octet-stream";
+      product.productBrochure = await uploadToS3(
+        requestBody.productBrochure,
+        mimeType,
+        "products/brochures"
+      );
+    }
 
     // Save to DynamoDB
     await dynamoDb.put(product);
