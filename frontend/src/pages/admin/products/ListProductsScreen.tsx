@@ -7,11 +7,34 @@ import { InputAdornment, CircularProgress } from "@mui/material";
 import { illustrations } from "../../../constants/static/images";
 import AdminProductsListCard from "../../../components/app/AdminProductsListCard";
 import { useNavigate } from "react-router-dom";
-import { useProducts } from "../../../hooks/useProducts";
+import { useProducts, useDeleteProduct } from "../../../hooks/useProducts";
+import AppAlertDialog from "../../../components/ui/AppAlertDialog";
 
 export default function ListProductsScreen() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(
+    null
+  );
+
+  const { mutate: deleteProduct, isPending: isDeleting } = useDeleteProduct({
+    onSuccess: () => {
+      setDeleteDialogOpen(false);
+      setSelectedProductId(null);
+    },
+  });
+
+  const handleDeleteClick = (id: string) => {
+    setSelectedProductId(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedProductId) {
+      deleteProduct(selectedProductId);
+    }
+  };
 
   // Fetch products with search filter
   const { data, isLoading, error } = useProducts({
@@ -107,10 +130,38 @@ export default function ListProductsScreen() {
               name={product.productName}
               price={product.marketSellingPrice}
               onClick={() => navigate(`/admin/products/view/${product.id}`)}
+              onEdit={() => navigate(`/admin/products/edit/${product.id}`)}
+              onDelete={() => handleDeleteClick(product.id)}
             />
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AppAlertDialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        title='Delete Product'
+        content='Are you sure you want to delete this product? This action cannot be undone.'
+        actions={
+          <>
+            <AppButton onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </AppButton>
+            <AppButton
+              variant='contained'
+              color='error'
+              onClick={handleConfirmDelete}
+              autoFocus
+              loading={isDeleting}
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AppButton>
+          </>
+        }
+        maxWidth='xs'
+        fullWidth
+      />
     </div>
   );
 }
