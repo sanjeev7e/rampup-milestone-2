@@ -1,5 +1,5 @@
 import AppCard from "../../../components/ui/AppCard";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Divider, CircularProgress, Alert } from "@mui/material";
 import {
   OutboxOutlined,
@@ -14,8 +14,12 @@ import AppDropZone from "../../../components/ui/AppDropZone";
 import { useFileUpload, formatFileSize } from "../../../hooks/useFileUpload";
 import type { FileData } from "../../../hooks/useFileUpload";
 import { icons } from "../../../constants/static/images";
-import { useNavigate } from "react-router-dom";
-import { useCreateProduct } from "../../../hooks/useProducts";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  useCreateProduct,
+  useUpdateProduct,
+  useProduct,
+} from "../../../hooks/useProducts";
 import type { CreateProductRequest } from "../../../types/products";
 
 interface BrochureFile {
@@ -66,11 +70,63 @@ const initialFormState: CreateProductRequest = {
 
 export default function AddEditProductScreen() {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const isEditMode = Boolean(id);
+
   const [formData, setFormData] =
     useState<CreateProductRequest>(initialFormState);
   const [productImages, setProductImages] = useState<string[]>([]);
   const [brochureFile, setBrochureFile] = useState<BrochureFile | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Fetch existing product if editing
+  const { data: existingProduct, isLoading: isLoadingProduct } = useProduct(
+    id || ""
+  );
+
+  // Initialize form with existing data in edit mode
+  useEffect(() => {
+    if (existingProduct && isEditMode && !isInitialized) {
+      setIsInitialized(true);
+      setFormData({
+        productName: existingProduct.productName,
+        productCategory: existingProduct.productCategory,
+        productDescription: existingProduct.productDescription,
+        form: existingProduct.form,
+        safety: existingProduct.safety,
+        uom: existingProduct.uom,
+        ratePerUnit: existingProduct.ratePerUnit,
+        marketSellingPrice: existingProduct.marketSellingPrice,
+        saleProfitMargin: existingProduct.saleProfitMargin,
+        productType: existingProduct.productType || "",
+        productSize: existingProduct.productSize || "",
+        productColor: existingProduct.productColor || "",
+        productVariant: existingProduct.productVariant || "",
+        ecoFriendly: existingProduct.ecoFriendly,
+        handleWithCare: existingProduct.handleWithCare,
+        productImage: existingProduct.productImage || "",
+        additionalImages: existingProduct.additionalImages || [],
+        productBrochure: existingProduct.productBrochure || "",
+      });
+
+      // Set images
+      const images = [
+        existingProduct.productImage,
+        ...(existingProduct.additionalImages || []),
+      ].filter(Boolean) as string[];
+      setProductImages(images);
+
+      // Set brochure
+      if (existingProduct.productBrochure) {
+        setBrochureFile({
+          name: "Product Brochure",
+          size: 0,
+          url: existingProduct.productBrochure,
+        });
+      }
+    }
+  }, [existingProduct, isEditMode, isInitialized]);
 
   const createMutation = useCreateProduct({
     onSuccess: () => {
@@ -80,6 +136,17 @@ export default function AddEditProductScreen() {
       setError(err.getUserMessage());
     },
   });
+
+  const updateMutation = useUpdateProduct({
+    onSuccess: () => {
+      navigate("/admin/products");
+    },
+    onError: (err) => {
+      setError(err.getUserMessage());
+    },
+  });
+
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   // Update form field
   const updateField = <K extends keyof CreateProductRequest>(
@@ -127,8 +194,21 @@ export default function AddEditProductScreen() {
       productBrochure: brochureFile?.url || "",
     };
 
-    createMutation.mutate(submitData);
+    if (isEditMode && id) {
+      updateMutation.mutate({ id, data: submitData });
+    } else {
+      createMutation.mutate(submitData);
+    }
   };
+
+  // Loading state for edit mode
+  if (isEditMode && isLoadingProduct) {
+    return (
+      <div className='flex justify-center items-center py-20'>
+        <CircularProgress />
+      </div>
+    );
+  }
 
   return (
     <div className='flex-1 space-y-10 overflow-x-hidden'>
@@ -305,21 +385,25 @@ export default function AddEditProductScreen() {
               <AppButton
                 variant='outlined'
                 onClick={() => navigate("/admin/products")}
-                disabled={createMutation.isPending}
+                disabled={isPending}
               >
                 Cancel
               </AppButton>
               <AppButton
                 variant='contained'
                 onClick={handleSubmit}
-                disabled={createMutation.isPending}
+                disabled={isPending}
                 startIcon={
-                  createMutation.isPending ? (
-                    <CircularProgress size={20} />
-                  ) : undefined
+                  isPending ? <CircularProgress size={20} /> : undefined
                 }
               >
-                {createMutation.isPending ? "Creating..." : "Create Product"}
+                {isPending
+                  ? isEditMode
+                    ? "Updating..."
+                    : "Creating..."
+                  : isEditMode
+                  ? "Update Product"
+                  : "Create Product"}
               </AppButton>
             </div>
           </AppCard>
