@@ -272,7 +272,7 @@ function ProductCarousel({ images }: { images: string[] }) {
         <CardMedia
           component='img'
           image={images[active]}
-          className='w-full h-full object-contain'
+          className='w-full h-full'
         />
 
         {/* Left Arrow */}
@@ -306,7 +306,7 @@ function ProductCarousel({ images }: { images: string[] }) {
           >
             <img
               src={img}
-              className='w-full h-full object-contain aspect-square'
+              className='w-full h-full object-cover aspect-square'
             />
           </div>
         ))}
