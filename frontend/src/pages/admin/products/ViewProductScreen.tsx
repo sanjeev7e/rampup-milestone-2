@@ -1,21 +1,27 @@
-import { Add, EditOutlined, Search } from "@mui/icons-material";
+import { EditOutlined, Search } from "@mui/icons-material";
 import AppButton from "../../../components/ui/AppButton";
 import AppCard from "../../../components/ui/AppCard";
 import { icons, illustrations } from "../../../constants/static/images";
 
 import { useState } from "react";
-import { CardMedia, Divider, InputAdornment } from "@mui/material";
+import {
+  CardMedia,
+  CircularProgress,
+  Divider,
+  InputAdornment,
+} from "@mui/material";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 import AppTabs, { type AppTabItem } from "../../../components/ui/AppTabs";
 import AppTextField from "../../../components/ui/AppTextField";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useProduct } from "../../../hooks/useProducts";
 
 const myTabs: AppTabItem[] = [
   {
     label: "Vendor Assigned",
     value: "1",
     content: (
-      <TabContentComponennt
+      <TabContentComponent
         imageSrc={illustrations.vendorAssignedEmpty}
         label='Add Vendors to Expand Your Business Network'
       />
@@ -27,7 +33,7 @@ const myTabs: AppTabItem[] = [
     label: "Assignment Request",
     value: "2",
     content: (
-      <TabContentComponennt
+      <TabContentComponent
         imageSrc={illustrations.assignmentRequestEmpty}
         label='Add Vendors to Expand Your Business Network'
       />
@@ -40,28 +46,77 @@ const myTabs: AppTabItem[] = [
 export default function ViewProductScreen() {
   const [currentTab, setCurrentTab] = useState("1");
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+
+  // Fetch product data
+  const { data: product, isLoading, error } = useProduct(id || "");
 
   function handleTabChange(_event: React.SyntheticEvent, newValue: string) {
     setCurrentTab(newValue);
   }
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className='flex justify-center items-center py-20'>
+        <CircularProgress />
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !product) {
+    return (
+      <div className='flex flex-col items-center gap-4 py-10'>
+        <p className='text-error text-lg'>Failed to load product</p>
+        <p className='text-on-surface-variant'>
+          {error?.message || "Product not found"}
+        </p>
+        <AppButton
+          variant='outlined'
+          onClick={() => navigate("/admin/products")}
+        >
+          Back to Products
+        </AppButton>
+      </div>
+    );
+  }
+
+  // Prepare images array
+  const productImages = [
+    product.productImage,
+    ...(product.additionalImages || []),
+  ].filter(Boolean) as string[];
+
+  // Use placeholder if no images
+  const displayImages =
+    productImages.length > 0
+      ? productImages
+      : [illustrations.assignmentRequestEmpty];
+
+  // Build product details
   const productDetails = [
-    { title: "Product  Name", content: "RCC Cement" },
+    { title: "Product Name", content: product.productName },
+    { title: "Product Category", content: product.productCategory },
+    { title: "Product Description", content: product.productDescription },
+    { title: "Form", content: product.form },
+    { title: "Safety", content: product.safety },
+    { title: "UOM", content: product.uom },
+    { title: "Rate per Unit", content: `$${product.ratePerUnit}` },
     {
-      title: "Product Description",
-      content:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+      title: "Market Selling Price",
+      content: `$${product.marketSellingPrice}`,
     },
-    { title: "Form", content: "Powder" },
-    { title: "Safety", content: "Flammable" },
-    { title: "UOM", content: "Per Unit" },
-    { title: "Rate per Unit", content: "200" },
-    { title: "Market Selling Price", content: "300" },
-    { title: "Sale Profit Margin", content: "50%" },
-    { title: "Product Type", content: "n/a" },
-    { title: "Product Size", content: "12*12*12" },
-    { title: "Product Color", content: "Grey" },
-    { title: "Document/Brochure", content: "Product.PDF" },
+    { title: "Sale Profit Margin", content: `${product.saleProfitMargin}%` },
+    { title: "Product Type", content: product.productType || "N/A" },
+    { title: "Product Size", content: product.productSize || "N/A" },
+    { title: "Product Color", content: product.productColor || "N/A" },
+    { title: "Product Variant", content: product.productVariant || "N/A" },
+    { title: "Eco Friendly", content: product.ecoFriendly ? "Yes" : "No" },
+    {
+      title: "Handle with Care",
+      content: product.handleWithCare ? "Yes" : "No",
+    },
   ];
 
   return (
@@ -71,7 +126,7 @@ export default function ViewProductScreen() {
           <h1 className='text-2xl font-medium'>Product Detail</h1>
           <AppButton
             startIcon={<EditOutlined />}
-            onClick={() => navigate("/admin/products/add")}
+            onClick={() => navigate(`/admin/products/edit/${id}`)}
           >
             Edit Product
           </AppButton>
@@ -81,22 +136,7 @@ export default function ViewProductScreen() {
           <div className='w-1/2'>
             <h1 className='text-xl font-medium mb-3'>Product Image</h1>
             <Divider className='mb-5!' />
-            <ProductCarousel
-              images={[
-                illustrations.assignmentRequestEmpty,
-                illustrations.productsEmpty,
-                illustrations.vendorAssignedEmpty,
-                illustrations.assignmentRequestEmpty,
-                illustrations.productsEmpty,
-                illustrations.vendorAssignedEmpty,
-                illustrations.assignmentRequestEmpty,
-                illustrations.productsEmpty,
-                illustrations.vendorAssignedEmpty,
-                illustrations.assignmentRequestEmpty,
-                illustrations.productsEmpty,
-                illustrations.vendorAssignedEmpty,
-              ]}
-            />
+            <ProductCarousel images={displayImages} />
           </div>
           <div className='w-1/2'>
             <h1 className='text-xl font-medium mb-3'>Product Basic Details</h1>
@@ -110,20 +150,34 @@ export default function ViewProductScreen() {
                 title={productDetails[1].title}
                 body={productDetails[1].content}
               />
-              <div className='grid grid-cols-3 gap-10'>
-                {productDetails.slice(3).map((productDetail, index) => {
-                  return (
-                    <TextSectionTitleAndBodyComponent
-                      title={productDetail.title}
-                      body={productDetail.content}
-                    />
-                  );
-                })}
-              </div>
               <TextSectionTitleAndBodyComponent
-                title='Document/Brochure'
-                body='Product.PDF'
+                title={productDetails[2].title}
+                body={productDetails[2].content}
               />
+              <div className='grid grid-cols-3 gap-10'>
+                {productDetails.slice(3).map((productDetail) => (
+                  <TextSectionTitleAndBodyComponent
+                    key={productDetail.title}
+                    title={productDetail.title}
+                    body={productDetail.content}
+                  />
+                ))}
+              </div>
+              {product.productBrochure && (
+                <TextSectionTitleAndBodyComponent
+                  title='Document/Brochure'
+                  body={
+                    <a
+                      href={product.productBrochure}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='text-primary underline'
+                    >
+                      View Brochure
+                    </a>
+                  }
+                />
+              )}
             </div>
           </div>
         </div>
@@ -180,7 +234,7 @@ function TextSectionTitleAndBodyComponent({
   body,
 }: {
   title: string;
-  body: string;
+  body: React.ReactNode;
 }) {
   return (
     <div>
@@ -247,7 +301,13 @@ function ProductCarousel({ images }: { images: string[] }) {
   );
 }
 
-function TabContentComponennt({ imageSrc, label }) {
+function TabContentComponent({
+  imageSrc,
+  label,
+}: {
+  imageSrc: string;
+  label: string;
+}) {
   return (
     <div className='flex flex-col items-center gap-5 p-5'>
       <img src={imageSrc} alt='' />
