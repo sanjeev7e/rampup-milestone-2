@@ -9,10 +9,12 @@ import AdminProductsListCard from "../../../components/app/AdminProductsListCard
 import { useNavigate } from "react-router-dom";
 import { useProducts, useDeleteProduct } from "../../../hooks/useProducts";
 import AppAlertDialog from "../../../components/ui/AppAlertDialog";
+import { useDebounce } from "../../../hooks/useDebounce";
 
 export default function ListProductsScreen() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(
     null
@@ -38,7 +40,7 @@ export default function ListProductsScreen() {
 
   // Fetch products with search filter
   const { data, isLoading, error } = useProducts({
-    search: searchQuery || undefined,
+    search: debouncedSearchQuery || undefined,
   });
 
   const products = data?.products ?? [];
