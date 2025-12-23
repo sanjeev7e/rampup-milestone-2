@@ -178,6 +178,20 @@ export default function ViewProductScreen() {
                   }
                 />
               )}
+              <div className='flex gap-5'>
+                {product.ecoFriendly && (
+                  <div className='flex gap-2'>
+                    <img src={icons.ecoFriendly} alt='Eco friendly' />
+                    <p>Eco friendly</p>
+                  </div>
+                )}
+                {product.handleWithCare && (
+                  <div className='flex gap-2'>
+                    <img src={icons.handleWithCare} alt='Handle with care' />
+                    <p>Handle with care</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

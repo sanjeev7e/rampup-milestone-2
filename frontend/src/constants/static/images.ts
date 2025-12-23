@@ -13,6 +13,8 @@ export const icons = {
   successCheck: `${iconsDirectory}/success_check.svg`,
   vendorAssigned: `${iconsDirectory}/vendor_assigned.svg`,
   vendors: `${iconsDirectory}/vendors.svg`,
+  handleWithCare: `${iconsDirectory}/handle_with_care.svg`,
+  ecoFriendly: `${iconsDirectory}/eco_friendly.svg`,
 };
 
 const illustrationsDirectory = "/illustrations";
