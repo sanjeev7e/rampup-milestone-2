@@ -240,7 +240,7 @@ function TitleComponent({ children }: { children: React.ReactNode }) {
 }
 
 function BodyCompoennt({ children }: { children: React.ReactNode }) {
-  return <p className='text-on-surface'>{children}</p>;
+  return <p className='text-on-surface wrap-break-word'>{children}</p>;
 }
 
 function TextSectionTitleAndBodyComponent({
