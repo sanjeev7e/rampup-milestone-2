@@ -3,7 +3,7 @@ import {
   DynamoDBDocumentClient,
   PutCommand,
   GetCommand,
-  ScanCommand,
+  QueryCommand,
   UpdateCommand,
   DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
@@ -43,11 +43,19 @@ export const dynamoDb = {
   },
 
   /**
-   * Scan all items (for listing)
+   * Scan all items (using Query on GSI to get all items)
    */
   scan: async () => {
-    const command = new ScanCommand({
+    const command = new QueryCommand({
       TableName: TABLE_NAME,
+      IndexName: "ProductsByTypeIndex",
+      KeyConditionExpression: "#type = :type",
+      ExpressionAttributeNames: {
+        "#type": "type",
+      },
+      ExpressionAttributeValues: {
+        ":type": "products",
+      },
     });
     const result = await docClient.send(command);
     return result.Items || [];

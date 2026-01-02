@@ -4,6 +4,7 @@
 
 export interface Product {
   id: string; // Primary key (UUID)
+  type: string; // GSI Partition Key (e.g., "products")
   productName: string;
   productCategory: string;
   productDescription: string;

@@ -31,6 +31,7 @@ export const handler = async (
     const now = new Date().toISOString();
     const product: Product = {
       id: uuidv4(),
+      type: "products",
       productName: requestBody.productName,
       productCategory: requestBody.productCategory,
       productDescription: requestBody.productDescription,

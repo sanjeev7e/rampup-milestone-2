@@ -236,12 +236,21 @@ resources:
         AttributeDefinitions:
           - AttributeName: id
             AttributeType: S
+          - AttributeName: type
+            AttributeType: S
         KeySchema:
           - AttributeName: id
             KeyType: HASH
         Tags:
           - Key: Name
             Value: ${self:custom.baseName}-products-table
+        GlobalSecondaryIndexes:
+          - IndexName: ProductsByTypeIndex
+            KeySchema:
+              - AttributeName: type
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
 
     # S3 Bucket for Product Images and Brochures
     ProductsBucket:

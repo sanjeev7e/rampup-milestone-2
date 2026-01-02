@@ -160,6 +160,8 @@ resources:
         AttributeDefinitions:
           - AttributeName: id
             AttributeType: S
+          - AttributeName: type
+            AttributeType: S
         KeySchema:
           - AttributeName: id
             KeyType: HASH
@@ -169,6 +171,13 @@ resources:
             Value: ${self:provider.stage}
           - Key: Service
             Value: ${self:service}
+        GlobalSecondaryIndexes:
+          - IndexName: ProductsByTypeIndex
+            KeySchema:
+              - AttributeName: type
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
 
     ProductsBucket:
       Type: AWS::S3::Bucket
