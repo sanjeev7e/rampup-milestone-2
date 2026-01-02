@@ -1,0 +1,180 @@
+service: products-backend-ecs
+
+frameworkVersion: "3"
+
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ${opt:region, 'us-east-1'}
+  stage: ${opt:stage, 'dev'}
+  environment:
+    ECR_REPO: ${env:ECR_REPO_URI}
+
+custom:
+  awsAccountId: ${aws:accountId}
+  baseName: ${self:service}-${self:provider.stage}
+
+resources:
+  Resources:
+    ECSCluster:
+      Type: AWS::ECS::Cluster
+      Properties:
+        ClusterName: ${self:custom.baseName}-cluster
+        CapacityProviders:
+          - FARGATE
+
+    ECSService:
+      Type: AWS::ECS::Service
+      Properties:
+        TaskDefinition: !Ref ECSTaskDefinition
+        ServiceName: ${self:custom.baseName}-service
+        Cluster: !Ref ECSCluster
+        LaunchType: FARGATE
+        SchedulingStrategy: REPLICA
+        DesiredCount: 1
+        AvailabilityZoneRebalancing: ENABLED
+        NetworkConfiguration:
+          AwsvpcConfiguration:
+            # VPCId: !Ref VPC
+            Subnets:
+              - !Ref Subnet1
+              - !Ref Subnet2
+            SecurityGroups:
+              - !Ref ECSSecuiryGroup
+            AssignPublicIp: ENABLED
+
+    VPC:
+      Type: AWS::EC2::VPC
+      Properties:
+        CidrBlock: 10.0.0.0/16
+        EnableDnsSupport: true
+        EnableDnsHostnames: true
+        InstanceTenancy: default
+
+    Subnet1:
+      Type: AWS::EC2::Subnet
+      Properties:
+        VpcId: !Ref VPC
+        CidrBlock: 10.0.0.0/24
+        AvailabilityZone: us-east-1a
+
+    Subnet2:
+      Type: AWS::EC2::Subnet
+      Properties:
+        VpcId: !Ref VPC
+        CidrBlock: 10.0.1.0/24
+        AvailabilityZone: us-east-1b
+
+    InternetGateway:
+      Type: AWS::EC2::InternetGateway
+      Properties:
+        Tags:
+          - Key: Name
+            Value: ${self:custom.baseName}-internet-gateway
+
+    InternetGatewayAttachment:
+      Type: AWS::EC2::VPCGatewayAttachment
+      Properties:
+        InternetGatewayId: !Ref InternetGateway
+        VpcId: !Ref VPC
+
+    PublicRouteTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId: !Ref VPC
+        Tags:
+          - Key: Name
+            Value: ${self:custom.baseName}-public-route-table
+
+    PublicRoute:
+      Type: AWS::EC2::Route
+      DependsOn: InternetGatewayAttachment
+      Properties:
+        RouteTableId: !Ref PublicRouteTable
+        DestinationCidrBlock: 0.0.0.0/0
+        GatewayId: !Ref InternetGateway
+
+    Subnet1RouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref Subnet1
+        RouteTableId: !Ref PublicRouteTable
+
+    Subnet2RouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref Subnet2
+        RouteTableId: !Ref PublicRouteTable
+
+    ECSSecuiryGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupName: ${self:custom.baseName}-security-group
+        GroupDescription: ${self:custom.baseName}-security-group
+        VpcId: !Ref VPC
+        SecurityGroupIngress:
+          - IpProtocol: tcp
+            FromPort: 3000
+            ToPort: 3000
+            CidrIp: 0.0.0.0/0
+          - IpProtocol: tcp
+            FromPort: 0
+            ToPort: 65535
+            CidrIp: 0.0.0.0/0
+        SecurityGroupEgress:
+          - IpProtocol: -1
+            CidrIp: 0.0.0.0/0
+
+    ECSTaskDefinition:
+      Type: AWS::ECS::TaskDefinition
+      Properties:
+        Family: ${self:custom.baseName}-task
+        RequiresCompatibilities:
+          - FARGATE
+        RuntimePlatform:
+          CpuArchitecture: X86_64
+          OperatingSystemFamily: LINUX
+        NetworkMode: awsvpc
+        Cpu: "256"
+        Memory: "512"
+        ExecutionRoleArn: !Ref ECSTaskExecutionRole
+        ContainerDefinitions:
+          - Name: ${self:custom.baseName}-container
+            Essential: true
+            Image: ${env:ECR_REPO_URI}
+            PortMappings:
+              - ContainerPort: 3000
+                Protocol: tcp
+                AppProtocol: http
+                HostPort: 3000
+            Environment:
+              - Name: REGION
+                Value: ${self:provider.region}
+
+    ECSTaskExecutionRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ${self:custom.baseName}-ecsTaskExecutionRole
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: ecs-tasks.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: ${self:custom.baseName}-ecsTaskExecutionRolePolicy
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - ecr:GetAuthorizationToken
+                    - ecr:BatchCheckLayerAvailability
+                    - ecr:GetDownloadUrlForLayer
+                    - ecr:BatchGetImage
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: "*"
