@@ -15,6 +15,8 @@ provider:
 custom:
   awsAccountId: ${aws:accountId}
   baseName: ${self:service}-${self:provider.stage}
+  productsTable: Products
+  productsBucket: products-ecs-${self:provider.stage}-${self:custom.awsAccountId}
 
 resources:
   Resources:
@@ -140,6 +142,7 @@ resources:
         Cpu: "256"
         Memory: "512"
         ExecutionRoleArn: !Ref ECSTaskExecutionRole
+        TaskRoleArn: !Ref ECSTaskRole
         ContainerDefinitions:
           - Name: ${self:custom.baseName}-container
             Essential: true
@@ -152,6 +155,10 @@ resources:
             Environment:
               - Name: REGION
                 Value: ${self:provider.region}
+              - Name: PRODUCTS_TABLE
+                Value: ${self:custom.productsTable}
+              - Name: PRODUCTS_BUCKET
+                Value: ${self:custom.productsBucket}
 
     ECSTaskExecutionRole:
       Type: AWS::IAM::Role
@@ -178,3 +185,125 @@ resources:
                     - logs:CreateLogStream
                     - logs:PutLogEvents
                   Resource: "*"
+
+    # Task Role - permissions for the running container
+    ECSTaskRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ${self:custom.baseName}-ecsTaskRole
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: ecs-tasks.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: ${self:custom.baseName}-dynamoDBPolicy
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - dynamodb:GetItem
+                    - dynamodb:PutItem
+                    - dynamodb:UpdateItem
+                    - dynamodb:DeleteItem
+                    - dynamodb:Scan
+                    - dynamodb:Query
+                  Resource:
+                    - !GetAtt ProductsTable.Arn
+          - PolicyName: ${self:custom.baseName}-s3Policy
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - s3:GetObject
+                    - s3:PutObject
+                    - s3:DeleteObject
+                    - s3:ListBucket
+                  Resource:
+                    - !GetAtt ProductsBucket.Arn
+                    - !Sub "${ProductsBucket.Arn}/*"
+
+    # DynamoDB Table for Products
+    ProductsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.productsTable}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        Tags:
+          - Key: Name
+            Value: ${self:custom.baseName}-products-table
+
+    # S3 Bucket for Product Images and Brochures
+    ProductsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.productsBucket}
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: false
+          BlockPublicPolicy: false
+          IgnorePublicAcls: false
+          RestrictPublicBuckets: false
+        CorsConfiguration:
+          CorsRules:
+            - AllowedHeaders:
+                - "*"
+              AllowedMethods:
+                - GET
+                - PUT
+                - POST
+                - DELETE
+              AllowedOrigins:
+                - "*"
+              MaxAge: 3600
+        Tags:
+          - Key: Name
+            Value: ${self:custom.baseName}-products-bucket
+
+    # S3 Bucket Policy for public read access (for product images)
+    ProductsBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref ProductsBucket
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Sid: PublicReadGetObject
+              Effect: Allow
+              Principal: "*"
+              Action: s3:GetObject
+              Resource: !Sub "${ProductsBucket.Arn}/*"
+
+  Outputs:
+    ProductsTableName:
+      Description: DynamoDB Products Table Name
+      Value: !Ref ProductsTable
+      Export:
+        Name: ${self:custom.baseName}-ProductsTableName
+
+    ProductsTableArn:
+      Description: DynamoDB Products Table ARN
+      Value: !GetAtt ProductsTable.Arn
+      Export:
+        Name: ${self:custom.baseName}-ProductsTableArn
+
+    ProductsBucketName:
+      Description: S3 Products Bucket Name
+      Value: !Ref ProductsBucket
+      Export:
+        Name: ${self:custom.baseName}-ProductsBucketName
+
+    ProductsBucketArn:
+      Description: S3 Products Bucket ARN
+      Value: !GetAtt ProductsBucket.Arn
+      Export:
+        Name: ${self:custom.baseName}-ProductsBucketArn
