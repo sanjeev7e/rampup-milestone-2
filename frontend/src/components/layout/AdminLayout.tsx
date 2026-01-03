@@ -11,6 +11,7 @@ import RootLayout from "./RootLayout";
 import { icons } from "../../constants/static/images";
 import AppButton from "../ui/AppButton";
 import { useNavigate } from "react-router-dom";
+import AppBreadcrumbs from "../ui/AppBreadcrumbs";
 
 const menuItems = [
   { label: "Dashboard", icon: icons.dashboard, path: "/" },
@@ -36,7 +37,7 @@ export default function AdminLayout({
 function Header() {
   return (
     <div className='flex justify-between items-center px-5 py-3'>
-      <h1 className='text-sm font-normal text-primary'>Products List</h1>
+      <AppBreadcrumbs />
       <AppButton type='icon-button' size='small'>
         <Badge variant='dot' color='primary'>
           <img src={icons.notifications} alt='notifications' className='h-6' />
