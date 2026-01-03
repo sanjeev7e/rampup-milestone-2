@@ -46,12 +46,15 @@ export default function ListProductsScreen() {
   const products = data?.products ?? [];
 
   return (
-    <div className='p-4 space-y-6 w-full'>
+    <div className='p-4 space-y-6 w-full bg-schemes-surface'>
       <h2 className='text-2xl font-medium'>Product List</h2>
-      <div className='flex justify-end gap-5'>
+      <div className='flex justify-end items-center gap-5'>
         <AppTextField
           placeholder='Search'
           value={searchQuery}
+          inputProps={{
+            className: "py-0! h-11!",
+          }}
           onChange={(e) => setSearchQuery(e.target.value)}
           slotProps={{
             input: {
@@ -62,14 +65,18 @@ export default function ListProductsScreen() {
               ),
             },
           }}
+          className='w-80 h-11 rounded-xl!'
         />
 
-        <AppButton type='icon-button'>
+        <AppButton
+          className='bg-inverse-on-surface! w-11 h-11  rounded-lg!'
+          type='icon-button'
+        >
           <Tune />
         </AppButton>
         <AppButton
           variant='contained'
-          className='bg-primary'
+          className='bg-primary w-36 h-11 rounded-xl!'
           startIcon={<AddIcon />}
           onClick={() => navigate("/admin/products/add")}
         >
