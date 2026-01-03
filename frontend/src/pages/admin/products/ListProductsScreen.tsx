@@ -121,11 +121,11 @@ export default function ListProductsScreen() {
 
       {/* Products Grid */}
       {!isLoading && !error && products.length > 0 && (
-        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4'>
+        <div className='grid grid-cols-5 gap-4'>
           {products.map((product) => (
             <AdminProductsListCard
               key={product.id}
-              image={product.productImage || illustrations.productImageNotFound}
+              image={product.productImage}
               category={product.productCategory}
               name={product.productName}
               price={product.marketSellingPrice}

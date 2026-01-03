@@ -10,6 +10,7 @@ import {
 import AppButton from "../ui/AppButton";
 import { MoreVert, Edit, Delete } from "@mui/icons-material";
 import AppCard from "../ui/AppCard";
+import { illustrations } from "../../constants/static/images";
 
 export default function AdminProductsListCard({
   name,
@@ -55,12 +56,12 @@ export default function AdminProductsListCard({
   };
 
   return (
-    <div className='relative w-fit'>
+    <div className='relative w-full min-w-fit'>
       <AppCard onClick={onClick}>
         <CardMedia
           component='img'
-          className='object-cover w-[195px] h-[195px]'
-          image={image}
+          className='object-cover w-48 h-48'
+          image={image || illustrations.productImageNotFound}
           alt='Product image'
         />
         <CardContent className='space-y-5'>
@@ -87,21 +88,28 @@ export default function AdminProductsListCard({
         onClick={(e) => e.stopPropagation()}
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-        PaperProps={{
-          className: "w-[120px]",
-        }}
       >
         <MenuItem onClick={handleEdit}>
-          <ListItemIcon>
-            <Edit fontSize='small' />
-          </ListItemIcon>
-          <ListItemText>Edit</ListItemText>
+          <ListItemText
+            className='text-primary'
+            primaryTypographyProps={{ fontWeight: "medium" }}
+          >
+            Edit
+          </ListItemText>
+        </MenuItem>
+        <MenuItem>
+          <ListItemText
+            className='text-primary'
+            primaryTypographyProps={{ fontWeight: "medium" }}
+          >
+            Archive Product
+          </ListItemText>
         </MenuItem>
         <MenuItem onClick={handleDelete}>
-          <ListItemIcon>
-            <Delete fontSize='small' color='error' />
-          </ListItemIcon>
-          <ListItemText primaryTypographyProps={{ color: "error" }}>
+          <ListItemText
+            className='text-error'
+            primaryTypographyProps={{ fontWeight: "medium" }}
+          >
             Delete
           </ListItemText>
         </MenuItem>
