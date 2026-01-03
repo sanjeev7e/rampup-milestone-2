@@ -4,7 +4,7 @@ import AddIcon from "@mui/icons-material/Add";
 import AppTextField from "../../../components/ui/AppTextField";
 import { Tune, Search } from "@mui/icons-material";
 import { InputAdornment, CircularProgress } from "@mui/material";
-import { illustrations } from "../../../constants/static/images";
+import { icons, illustrations } from "../../../constants/static/images";
 import AdminProductsListCard from "../../../components/app/AdminProductsListCard";
 import { useNavigate } from "react-router-dom";
 import { useProducts, useDeleteProduct } from "../../../hooks/useProducts";
@@ -148,26 +148,39 @@ export default function ListProductsScreen() {
       <AppAlertDialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
-        title='Delete Product'
-        content='Are you sure you want to delete this product? This action cannot be undone.'
-        actions={
+        title={
           <>
-            <AppButton onClick={() => setDeleteDialogOpen(false)}>
+            <img src={icons.info} alt='' />
+            <h5 className='text-base font-medium'>Attention !</h5>
+          </>
+        }
+        content={
+          <p className='text-sm text-on-surface-variant'>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
+            ad minim veniam
+          </p>
+        }
+        actions={[
+          <>
+            <AppButton
+              variant='outlined'
+              className='rounded-lg! py-4! px-14!'
+              onClick={() => setDeleteDialogOpen(false)}
+            >
               Cancel
             </AppButton>
             <AppButton
               variant='contained'
-              color='error'
+              className='rounded-lg! py-4! px-14! bg-error!'
               onClick={handleConfirmDelete}
-              autoFocus
               loading={isDeleting}
+              autoFocus
             >
               {isDeleting ? "Deleting..." : "Delete"}
             </AppButton>
-          </>
-        }
-        maxWidth='xs'
-        fullWidth
+          </>,
+        ]}
       />
     </div>
   );
