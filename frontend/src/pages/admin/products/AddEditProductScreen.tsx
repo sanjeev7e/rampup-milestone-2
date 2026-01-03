@@ -379,34 +379,36 @@ export default function AddEditProductScreen() {
                 onFileChange={setBrochureFile}
               />
             </div>
-
-            {/* Submit Button */}
-            <div className='flex justify-end gap-4 pt-4'>
-              <AppButton
-                variant='outlined'
-                onClick={() => navigate("/admin/products")}
-                disabled={isPending}
-              >
-                Cancel
-              </AppButton>
-              <AppButton
-                variant='contained'
-                onClick={handleSubmit}
-                disabled={isPending}
-                startIcon={
-                  isPending ? <CircularProgress size={20} /> : undefined
-                }
-              >
-                {isPending
-                  ? isEditMode
-                    ? "Updating..."
-                    : "Creating..."
-                  : isEditMode
-                  ? "Update Product"
-                  : "Create Product"}
-              </AppButton>
-            </div>
           </AppCard>
+        </div>
+      </div>
+
+      {/* Submit Button */}
+      <div className='absolute bottom-0 left-0 right-0 flex justify-between items-center gap-5 p-5 bg-white z-1 ml-64'>
+        <AppButton
+          onClick={() => navigate("/admin/products")}
+          disabled={isPending}
+        >
+          Cancel
+        </AppButton>
+        <div className='flex gap-5'>
+          <AppButton variant='outlined' disabled={isPending}>
+            Save as draft
+          </AppButton>
+          <AppButton
+            variant='contained'
+            onClick={handleSubmit}
+            disabled={isPending}
+            startIcon={isPending ? <CircularProgress size={20} /> : undefined}
+          >
+            {isPending
+              ? isEditMode
+                ? "Updating..."
+                : "Creating..."
+              : isEditMode
+              ? "Update Product"
+              : "Create Product"}
+          </AppButton>
         </div>
       </div>
     </div>
