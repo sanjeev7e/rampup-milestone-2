@@ -1,16 +1,15 @@
 import { useState } from "react";
 import {
   CardContent,
-  CardMedia,
   Menu,
   MenuItem,
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
 import AppButton from "../ui/AppButton";
-import { MoreVert, Edit, Delete } from "@mui/icons-material";
+import ProductImage from "../ui/ProductImage";
+import { MoreVert } from "@mui/icons-material";
 import AppCard from "../ui/AppCard";
-import { illustrations } from "../../constants/static/images";
 
 export default function AdminProductsListCard({
   name,
@@ -58,11 +57,10 @@ export default function AdminProductsListCard({
   return (
     <div className='relative w-full min-w-fit'>
       <AppCard onClick={onClick}>
-        <CardMedia
-          component='img'
+        <ProductImage
+          image={image}
+          key={image}
           className='object-cover w-48 h-48'
-          image={image || illustrations.productImageNotFound}
-          alt='Product image'
         />
         <CardContent className='space-y-5'>
           <div className='space-y-1'>

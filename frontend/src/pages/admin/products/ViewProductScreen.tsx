@@ -1,15 +1,11 @@
 import { EditOutlined, Search } from "@mui/icons-material";
 import AppButton from "../../../components/ui/AppButton";
 import AppCard from "../../../components/ui/AppCard";
+import ProductImage from "../../../components/ui/ProductImage";
 import { icons, illustrations } from "../../../constants/static/images";
 
 import { useState } from "react";
-import {
-  CardMedia,
-  CircularProgress,
-  Divider,
-  InputAdornment,
-} from "@mui/material";
+import { CircularProgress, Divider, InputAdornment } from "@mui/material";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 import AppTabs, { type AppTabItem } from "../../../components/ui/AppTabs";
 import AppTextField from "../../../components/ui/AppTextField";
@@ -269,9 +265,9 @@ function ProductCarousel({ images }: { images: string[] }) {
     <div>
       {/* Main Image */}
       <AppCard className='relative w-full h-full rounded-xl aspect-square mb-4'>
-        <CardMedia
-          component='img'
+        <ProductImage
           image={images[active]}
+          key={images[active]}
           className='w-full h-full'
         />
 
@@ -304,8 +300,8 @@ function ProductCarousel({ images }: { images: string[] }) {
               active === index ? "border-primary!" : ""
             } w-20 h-24 shrink-0 cursor-pointer border border-surface-variant rounded-md overflow-hidden`}
           >
-            <img
-              src={img}
+            <ProductImage
+              image={img}
               className='w-full h-full object-cover aspect-square'
             />
           </div>
