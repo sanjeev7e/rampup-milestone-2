@@ -21,6 +21,7 @@ const illustrationsDirectory = "/illustrations";
 export const illustrations = {
   assignmentRequestEmpty: `${illustrationsDirectory}/assignment_request_empty.svg`,
   productsEmpty: `${illustrationsDirectory}/products_empty.svg`,
+  productImageNotFound: `${illustrationsDirectory}/product_image_not_found.png`,
   vendorAssignedEmpty: `${illustrationsDirectory}/vendor_assigned_empty.svg`,
 };
 

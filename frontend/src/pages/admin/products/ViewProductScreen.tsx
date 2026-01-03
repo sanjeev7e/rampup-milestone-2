@@ -92,7 +92,7 @@ export default function ViewProductScreen() {
   const displayImages =
     productImages.length > 0
       ? productImages
-      : [illustrations.assignmentRequestEmpty];
+      : [illustrations.productImageNotFound];
 
   // Build product details
   const productDetails = [
