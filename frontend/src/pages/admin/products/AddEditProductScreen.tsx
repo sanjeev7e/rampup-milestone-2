@@ -1,11 +1,13 @@
 import AppCard from "../../../components/ui/AppCard";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Divider, CircularProgress, Alert } from "@mui/material";
 import {
   OutboxOutlined,
   CloseOutlined,
   InsertDriveFileOutlined,
   Add,
+  ChevronLeft,
+  ChevronRight,
 } from "@mui/icons-material";
 import AppTextField from "../../../components/ui/AppTextField";
 import AppSelect from "../../../components/ui/AppSelect";
@@ -498,12 +500,6 @@ function ProductImageUpload({
     [images, onImagesChange]
   );
 
-  const { handleFileSelect, handleDragOver, handleDrop } = useFileUpload({
-    accept: "image/*",
-    multiple: true,
-    onFilesProcessed: handleFilesProcessed,
-  });
-
   const removeImage = useCallback(
     (index: number) => {
       const newImages = images.filter((_, i) => i !== index);
@@ -512,48 +508,192 @@ function ProductImageUpload({
     [images, onImagesChange]
   );
 
+  const replaceImage = useCallback(
+    (index: number, newUrl: string) => {
+      const newImages = [...images];
+      newImages[index] = newUrl;
+      onImagesChange?.(newImages);
+    },
+    [images, onImagesChange]
+  );
+
+  const addImage = useCallback(
+    (newUrls: string[]) => {
+      onImagesChange?.([...images, ...newUrls]);
+    },
+    [images, onImagesChange]
+  );
+
+  const [activeIndex, setActiveIndex] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Reset active index ensuring it's valid
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [images.length]);
+
+  const currentImage = images[activeIndex];
+  const isEmptySlot = !currentImage;
+
+  const handleSlotUpload = useCallback(
+    (files: FileData[]) => {
+      if (files.length > 0) {
+        if (activeIndex < images.length) {
+          replaceImage(activeIndex, files[0].url);
+        } else {
+          addImage([files[0].url]);
+        }
+      }
+    },
+    [activeIndex, images.length, replaceImage, addImage]
+  );
+
+  const {
+    handleFileSelect: handleSlotSelect,
+    handleDragOver: handleSlotDragOver,
+    handleDrop: handleSlotDrop,
+  } = useFileUpload({
+    accept: "image/*",
+    multiple: false,
+    onFilesProcessed: handleSlotUpload,
+  });
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
   return (
     <div>
-      <AppDropZone
+      <input
+        type='file'
+        ref={fileInputRef}
+        onChange={handleSlotSelect}
         accept='image/*'
-        multiple
-        onFileSelect={handleFileSelect}
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
-        className='rounded-xl bg-inverse-on-surface mb-4 h-[450px] w-[460px]'
-      >
-        <div className='flex flex-col items-center justify-center py-16 px-4 h-full'>
-          <div className='mb-6'>
-            <img src={icons.photoPlaceholder} alt='' />
-          </div>
-          <h4 className='text-lg mb-1'>
-            <span className='text-primary font-semibold text-sm'>
-              Click to Upload Product Picture
-            </span>
-          </h4>
-          <p className='text-on-surface-variant text-xs'>or</p>
-          <p className='text-on-surface-variant text-xs'>drag and drop</p>
-        </div>
-      </AppDropZone>
+        className='hidden'
+      />
+      <div className='relative rounded-xl bg-inverse-on-surface mb-4 h-[450px] w-[460px] flex items-center justify-center overflow-hidden border border-surface-variant group'>
+        {/* Main Content Area */}
+        {!isEmptySlot ? (
+          <div className='relative w-full h-full group'>
+            <img
+              src={currentImage}
+              alt={`Product Preview ${activeIndex + 1}`}
+              className='w-full h-full object-cover group-hover:blur-xs transition-all duration-300'
+            />
 
-      <ImageThumbnailGrid images={images} onRemove={removeImage} isEditMode />
+            {/* Overlay Controls */}
+            <div className='absolute inset-0 bg-white/50 flex flex-col items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
+              <AppButton
+                variant='contained'
+                className='rounded-lg! w-[150px]! py-4!'
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Replace Image
+              </AppButton>
+              <span className='text-primary font-medium'>Or</span>
+              <AppButton
+                variant='outlined'
+                className='rounded-lg! w-[150px]! border-error! text-error! hover:bg-error/10! hover:border-error! py-4!'
+                onClick={() => setDeleteDialogOpen(true)}
+              >
+                Remove
+              </AppButton>
+            </div>
+          </div>
+        ) : (
+          <AppDropZone
+            accept='image/*'
+            multiple={false}
+            onFileSelect={handleSlotSelect}
+            onDragOver={handleSlotDragOver}
+            onDrop={handleSlotDrop}
+            className='w-full h-full border-none bg-transparent'
+          >
+            <div className='flex flex-col items-center justify-center py-16 px-4 h-full'>
+              <div className='mb-6'>
+                <img src={icons.photoPlaceholder} alt='' />
+              </div>
+              <h4 className='text-lg mb-1'>
+                <span className='text-primary font-semibold text-sm'>
+                  Click to Upload Product Picture
+                </span>
+              </h4>
+              <p className='text-on-surface-variant text-xs'>or</p>
+              <p className='text-on-surface-variant text-xs'>drag and drop</p>
+            </div>
+          </AppDropZone>
+        )}
+      </div>
+
+      <ImageThumbnailGrid
+        images={images}
+        activeIndex={activeIndex}
+        onSelect={setActiveIndex}
+        isEditMode
+      />
+
+      {/* Delete Confirmation Dialog - Moved here */}
+      {deleteDialogOpen && (
+        <AppAlertDialog
+          open={deleteDialogOpen}
+          onClose={() => setDeleteDialogOpen(false)}
+          title={
+            <>
+              <img src={icons.info} alt='' />
+              <h5 className='text-base font-medium'>Attention !</h5>
+            </>
+          }
+          content={
+            <p className='text-sm text-on-surface-variant'>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+              enim ad minim veniam
+            </p>
+          }
+          actions={[
+            <>
+              <AppButton
+                variant='outlined'
+                color='error'
+                className='rounded-lg! py-4! px-14!'
+                onClick={() => {
+                  removeImage(activeIndex);
+                  setDeleteDialogOpen(false);
+                }}
+              >
+                Remove
+              </AppButton>
+              <AppButton
+                variant='contained'
+                className='rounded-lg! py-4! px-14!'
+                onClick={() => {
+                  fileInputRef.current?.click();
+                  setDeleteDialogOpen(false);
+                }}
+                autoFocus
+              >
+                Replace
+              </AppButton>
+            </>,
+          ]}
+        />
+      )}
     </div>
   );
 }
 
 /**
  * ImageThumbnailGrid Component
- * Displays uploaded images with remove functionality
- * Follows Single Responsibility - only handles thumbnail display
+ * Displays uploaded images
  */
 function ImageThumbnailGrid({
   images,
-  onRemove,
+  activeIndex = 0,
+  onSelect,
   placeholderCount = 4,
   isEditMode = false,
 }: {
   images: string[];
-  onRemove: (index: number) => void;
+  activeIndex?: number;
+  onSelect?: (index: number) => void;
   placeholderCount?: number;
   isEditMode?: boolean;
 }) {
@@ -565,37 +705,46 @@ function ImageThumbnailGrid({
       {images.map((img, index) => (
         <div
           key={index}
-          className='relative w-20 h-20 shrink-0 rounded-lg overflow-hidden bg-primary/10 border border-surface-variant group'
+          onClick={() => onSelect?.(index)}
+          className={`relative w-20 h-20 shrink-0 rounded-lg overflow-hidden bg-primary/10 border group cursor-pointer hover:opacity-80 transition-opacity
+            ${
+              activeIndex === index
+                ? "border-primary border-2"
+                : "border-surface-variant"
+            }
+            `}
         >
           <img
             src={img}
             alt={`Uploaded ${index + 1}`}
             className='w-full h-full object-cover'
           />
-          <AppButton
-            type='icon-button'
-            onClick={() => onRemove(index)}
-            className='absolute! top-1! right-1! opacity-0 group-hover:opacity-100 transition-opacity'
-          >
-            <CloseOutlined />
-          </AppButton>
         </div>
       ))}
 
       {/* Empty placeholder slots */}
-      {Array.from({ length: emptySlots }).map((_, index) => (
-        <div
-          key={`empty-${index}`}
-          className={`w-20 h-20 shrink-0 rounded-lg bg-primary/10 
-          ${
-            isEditMode &&
-            "flex items-center justify-center border border-primary border-dashed"
-          }
-           `}
-        >
-          {isEditMode && <Add className='text-primary text-6xl!' />}
-        </div>
-      ))}
+      {Array.from({ length: emptySlots }).map((_, i) => {
+        const actualIndex = images.length + i;
+        return (
+          <div
+            onClick={() => onSelect?.(actualIndex)}
+            key={`empty-${i}`}
+            className={`w-20 h-20 shrink-0 rounded-lg bg-primary/10 
+            ${
+              isEditMode &&
+              "flex items-center justify-center border-dashed cursor-pointer"
+            }
+            ${
+              activeIndex === actualIndex
+                ? "border-primary border-2"
+                : "border-surface-variant/50 border"
+            }
+            `}
+          >
+            {isEditMode && <Add className='text-primary text-6xl!' />}
+          </div>
+        );
+      })}
     </div>
   );
 }
