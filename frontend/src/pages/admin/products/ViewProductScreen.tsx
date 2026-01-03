@@ -128,13 +128,13 @@ export default function ViewProductScreen() {
           </AppButton>
         </div>
 
-        <div className='flex gap-4'>
-          <div className='w-1/2'>
+        <div className='flex gap-16'>
+          <div>
             <h1 className='text-xl font-medium mb-3'>Product Image</h1>
             <Divider className='mb-5!' />
             <ProductCarousel images={displayImages} />
           </div>
-          <div className='w-1/2'>
+          <div className='w-full'>
             <h1 className='text-xl font-medium mb-3'>Product Basic Details</h1>
             <Divider className='mb-5!' />
             <div className='flex flex-col gap-5 mb-5'>
@@ -264,7 +264,7 @@ function ProductCarousel({ images }: { images: string[] }) {
   return (
     <div>
       {/* Main Image */}
-      <AppCard className='relative w-full h-full rounded-xl aspect-square mb-4'>
+      <AppCard className='relative w-[460px] h-[450px] rounded-xl aspect-square mb-4'>
         <ProductImage
           image={images[active]}
           key={images[active]}
