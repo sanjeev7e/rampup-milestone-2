@@ -54,7 +54,7 @@ export default function ViewProductScreen() {
   // Loading state
   if (isLoading) {
     return (
-      <div className='flex justify-center items-center py-20'>
+      <div className='flex justify-center items-center py-20 w-full'>
         <CircularProgress />
       </div>
     );
