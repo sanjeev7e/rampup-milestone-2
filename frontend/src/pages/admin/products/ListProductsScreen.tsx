@@ -132,7 +132,7 @@ export default function ListProductsScreen() {
           {products.map((product) => (
             <AdminProductsListCard
               key={product.id}
-              image={product.productImage}
+              image={product.productImage || illustrations.productImageNotFound}
               category={product.productCategory}
               name={product.productName}
               price={product.marketSellingPrice}

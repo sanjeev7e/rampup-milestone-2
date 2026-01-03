@@ -6,8 +6,6 @@ import {
   CloseOutlined,
   InsertDriveFileOutlined,
   Add,
-  ChevronLeft,
-  ChevronRight,
 } from "@mui/icons-material";
 import AppTextField from "../../../components/ui/AppTextField";
 import AppSelect from "../../../components/ui/AppSelect";
@@ -491,14 +489,14 @@ function ProductImageUpload({
   images: string[];
   onImagesChange?: (images: string[]) => void;
 }) {
-  // Use the shared file upload hook
-  const handleFilesProcessed = useCallback(
-    (files: FileData[]) => {
-      const newUrls = files.map((f) => f.url);
-      onImagesChange?.([...images, ...newUrls]);
-    },
-    [images, onImagesChange]
-  );
+  // // Use the shared file upload hook
+  // const handleFilesProcessed = useCallback(
+  //   (files: FileData[]) => {
+  //     const newUrls = files.map((f) => f.url);
+  //     onImagesChange?.([...images, ...newUrls]);
+  //   },
+  //   [images, onImagesChange]
+  // );
 
   const removeImage = useCallback(
     (index: number) => {
