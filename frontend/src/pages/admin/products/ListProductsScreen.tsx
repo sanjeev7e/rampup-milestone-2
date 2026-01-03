@@ -46,7 +46,7 @@ export default function ListProductsScreen() {
   const products = data?.products ?? [];
 
   return (
-    <div className='p-4 space-y-6 w-full bg-schemes-surface h-fit'>
+    <div className='p-4 space-y-6 w-full bg-schemes-surface h-fit min-h-full'>
       <h2 className='text-2xl font-medium'>Product List</h2>
       <div className='flex justify-end items-center gap-5'>
         <AppTextField
