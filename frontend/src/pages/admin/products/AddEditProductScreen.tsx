@@ -224,162 +224,169 @@ export default function AddEditProductScreen() {
           </Alert>
         )}
 
-        <div className='flex gap-4'>
-          <AppCard className='w-1/2 p-5 bg-surface!'>
-            <h1 className='text-xl font-medium mb-3'>Upload Product Image</h1>
-            <Divider className='mb-5!' />
-            <ProductImageUpload
-              images={productImages}
-              onImagesChange={setProductImages}
-            />
-          </AppCard>
-
-          <AppCard className='w-1/2 p-5 bg-surface! space-y-10'>
-            <div>
-              <h1 className='text-xl font-medium mb-3'>
-                Product Basic Details
-              </h1>
+        <div className='flex gap-16'>
+          <div>
+            <AppCard className='p-5 bg-surface!'>
+              <h1 className='text-xl font-medium mb-3'>Upload Product Image</h1>
               <Divider className='mb-5!' />
-              <div className='flex flex-col gap-5 mb-5'>
-                <AppTextField
-                  label='Product Name'
-                  value={formData.productName}
-                  onChange={(e) => updateField("productName", e.target.value)}
-                  required
-                />
-                <AppSelect
-                  label='Product Category'
-                  options={CATEGORY_OPTIONS}
-                  value={formData.productCategory}
-                  onChange={(value: string) =>
-                    updateField("productCategory", value)
-                  }
-                />
-                <AppTextField
-                  label='Product Description'
-                  multiline
-                  minRows={5}
-                  value={formData.productDescription}
-                  onChange={(e) =>
-                    updateField("productDescription", e.target.value)
-                  }
-                  required
-                />
-              </div>
-            </div>
-            <div>
-              <h1 className='text-xl font-medium mb-3'>
-                Additional Product Attributes
-              </h1>
-              <Divider className='mb-5!' />
-              <div className='grid grid-cols-2 gap-5 mb-5'>
-                <AppSelect
-                  label='Form'
-                  options={FORM_OPTIONS}
-                  value={formData.form}
-                  onChange={(value: string) => updateField("form", value)}
-                />
-                <AppSelect
-                  label='Safety'
-                  options={SAFETY_OPTIONS}
-                  value={formData.safety}
-                  onChange={(value: string) => updateField("safety", value)}
-                />
-                <AppSelect
-                  label='UOM'
-                  options={UOM_OPTIONS}
-                  value={formData.uom}
-                  onChange={(value: string) => updateField("uom", value)}
-                />
+              <ProductImageUpload
+                images={productImages}
+                onImagesChange={setProductImages}
+              />
+            </AppCard>
+          </div>
+          <div className='w-full'>
+            <AppCard className='p-5 bg-surface! space-y-10'>
+              <div>
+                <h1 className='text-xl font-medium mb-3'>
+                  Product Basic Details
+                </h1>
+                <Divider className='mb-5!' />
+                <div className='flex flex-col gap-5 mb-5'>
+                  <AppTextField
+                    label='Product Name'
+                    value={formData.productName}
+                    onChange={(e) => updateField("productName", e.target.value)}
+                    required
+                  />
+                  <AppSelect
+                    label='Product Category'
+                    options={CATEGORY_OPTIONS}
+                    value={formData.productCategory}
+                    onChange={(value: string) =>
+                      updateField("productCategory", value)
+                    }
+                  />
+                  <AppTextField
+                    label='Product Description'
+                    multiline
+                    minRows={5}
+                    value={formData.productDescription}
+                    onChange={(e) =>
+                      updateField("productDescription", e.target.value)
+                    }
+                    required
+                  />
+                </div>
               </div>
               <div>
-                <AppCheckbox
-                  label='Eco Friendly'
-                  checked={formData.ecoFriendly}
-                  onChange={(e) => updateField("ecoFriendly", e.target.checked)}
-                />
-                <AppCheckbox
-                  label='Handle with Care'
-                  checked={formData.handleWithCare}
-                  onChange={(e) =>
-                    updateField("handleWithCare", e.target.checked)
-                  }
+                <h1 className='text-xl font-medium mb-3'>
+                  Additional Product Attributes
+                </h1>
+                <Divider className='mb-5!' />
+                <div className='grid grid-cols-2 gap-5 mb-5'>
+                  <AppSelect
+                    label='Form'
+                    options={FORM_OPTIONS}
+                    value={formData.form}
+                    onChange={(value: string) => updateField("form", value)}
+                  />
+                  <AppSelect
+                    label='Safety'
+                    options={SAFETY_OPTIONS}
+                    value={formData.safety}
+                    onChange={(value: string) => updateField("safety", value)}
+                  />
+                  <AppSelect
+                    label='UOM'
+                    options={UOM_OPTIONS}
+                    value={formData.uom}
+                    onChange={(value: string) => updateField("uom", value)}
+                  />
+                </div>
+                <div>
+                  <AppCheckbox
+                    label='Eco Friendly'
+                    checked={formData.ecoFriendly}
+                    onChange={(e) =>
+                      updateField("ecoFriendly", e.target.checked)
+                    }
+                  />
+                  <AppCheckbox
+                    label='Handle with Care'
+                    checked={formData.handleWithCare}
+                    onChange={(e) =>
+                      updateField("handleWithCare", e.target.checked)
+                    }
+                  />
+                </div>
+              </div>
+              <div>
+                <h1 className='text-xl font-medium mb-3'>
+                  Pricing and Rate Settings
+                </h1>
+                <Divider className='mb-5!' />
+                <div className='grid grid-cols-2 gap-5 mb-5'>
+                  <AppTextField
+                    label='Rate per Unit'
+                    type='number'
+                    value={formData.ratePerUnit || ""}
+                    onChange={(e) =>
+                      updateField("ratePerUnit", Number(e.target.value))
+                    }
+                  />
+                  <AppTextField
+                    label='Market Selling Price'
+                    type='number'
+                    value={formData.marketSellingPrice || ""}
+                    onChange={(e) =>
+                      updateField("marketSellingPrice", Number(e.target.value))
+                    }
+                  />
+                  <AppTextField
+                    label='Sale Profit Margin (%)'
+                    type='number'
+                    value={formData.saleProfitMargin || ""}
+                    onChange={(e) =>
+                      updateField("saleProfitMargin", Number(e.target.value))
+                    }
+                  />
+                </div>
+              </div>
+              <div>
+                <h1 className='text-xl font-medium mb-3'>
+                  Other Details (optional)
+                </h1>
+                <Divider className='mb-5!' />
+                <div className='grid grid-cols-2 gap-5 mb-5'>
+                  <AppTextField
+                    label='Product Type'
+                    value={formData.productType || ""}
+                    onChange={(e) => updateField("productType", e.target.value)}
+                  />
+                  <AppTextField
+                    label='Product Size (L*W*H)'
+                    value={formData.productSize || ""}
+                    onChange={(e) => updateField("productSize", e.target.value)}
+                  />
+                  <AppTextField
+                    label='Product Variant'
+                    value={formData.productVariant || ""}
+                    onChange={(e) =>
+                      updateField("productVariant", e.target.value)
+                    }
+                  />
+                  <AppTextField
+                    label='Product Color'
+                    value={formData.productColor || ""}
+                    onChange={(e) =>
+                      updateField("productColor", e.target.value)
+                    }
+                  />
+                </div>
+              </div>
+              <div>
+                <h1 className='text-xl font-medium mb-3'>
+                  Upload Product Brochure (optional)
+                </h1>
+                <Divider className='mb-5!' />
+                <BrochureUpload
+                  file={brochureFile}
+                  onFileChange={setBrochureFile}
                 />
               </div>
-            </div>
-            <div>
-              <h1 className='text-xl font-medium mb-3'>
-                Pricing and Rate Settings
-              </h1>
-              <Divider className='mb-5!' />
-              <div className='grid grid-cols-2 gap-5 mb-5'>
-                <AppTextField
-                  label='Rate per Unit'
-                  type='number'
-                  value={formData.ratePerUnit || ""}
-                  onChange={(e) =>
-                    updateField("ratePerUnit", Number(e.target.value))
-                  }
-                />
-                <AppTextField
-                  label='Market Selling Price'
-                  type='number'
-                  value={formData.marketSellingPrice || ""}
-                  onChange={(e) =>
-                    updateField("marketSellingPrice", Number(e.target.value))
-                  }
-                />
-                <AppTextField
-                  label='Sale Profit Margin (%)'
-                  type='number'
-                  value={formData.saleProfitMargin || ""}
-                  onChange={(e) =>
-                    updateField("saleProfitMargin", Number(e.target.value))
-                  }
-                />
-              </div>
-            </div>
-            <div>
-              <h1 className='text-xl font-medium mb-3'>
-                Other Details (optional)
-              </h1>
-              <Divider className='mb-5!' />
-              <div className='grid grid-cols-2 gap-5 mb-5'>
-                <AppTextField
-                  label='Product Type'
-                  value={formData.productType || ""}
-                  onChange={(e) => updateField("productType", e.target.value)}
-                />
-                <AppTextField
-                  label='Product Size (L*W*H)'
-                  value={formData.productSize || ""}
-                  onChange={(e) => updateField("productSize", e.target.value)}
-                />
-                <AppTextField
-                  label='Product Variant'
-                  value={formData.productVariant || ""}
-                  onChange={(e) =>
-                    updateField("productVariant", e.target.value)
-                  }
-                />
-                <AppTextField
-                  label='Product Color'
-                  value={formData.productColor || ""}
-                  onChange={(e) => updateField("productColor", e.target.value)}
-                />
-              </div>
-            </div>
-            <div>
-              <h1 className='text-xl font-medium mb-3'>
-                Upload Product Brochure (optional)
-              </h1>
-              <Divider className='mb-5!' />
-              <BrochureUpload
-                file={brochureFile}
-                onFileChange={setBrochureFile}
-              />
-            </div>
-          </AppCard>
+            </AppCard>
+          </div>
         </div>
       </div>
 
@@ -457,9 +464,9 @@ function ProductImageUpload({
         onFileSelect={handleFileSelect}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        className='border-2 rounded-xl bg-inverse-on-surface mb-4'
+        className='rounded-xl bg-inverse-on-surface mb-4 h-[450px] w-[460px]'
       >
-        <div className='flex flex-col items-center justify-center py-16 px-4'>
+        <div className='flex flex-col items-center justify-center py-16 px-4 h-full'>
           <div className='mb-6'>
             <img src={icons.photoPlaceholder} alt='' />
           </div>
