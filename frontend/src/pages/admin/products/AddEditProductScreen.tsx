@@ -21,6 +21,7 @@ import {
   useProduct,
 } from "../../../hooks/useProducts";
 import type { CreateProductRequest } from "../../../types/products";
+import AppAlertDialog from "../../../components/ui/AppAlertDialog";
 
 interface BrochureFile {
   name: string;
@@ -79,6 +80,7 @@ export default function AddEditProductScreen() {
   const [brochureFile, setBrochureFile] = useState<BrochureFile | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isProductSaved, setIsProductSaved] = useState(false);
 
   // Fetch existing product if editing
   const { data: existingProduct, isLoading: isLoadingProduct } = useProduct(
@@ -130,7 +132,7 @@ export default function AddEditProductScreen() {
 
   const createMutation = useCreateProduct({
     onSuccess: () => {
-      navigate("/admin/products");
+      setIsProductSaved(true);
     },
     onError: (err) => {
       setError(err.getUserMessage());
@@ -139,7 +141,7 @@ export default function AddEditProductScreen() {
 
   const updateMutation = useUpdateProduct({
     onSuccess: () => {
-      navigate("/admin/products");
+      setIsProductSaved(true);
     },
     onError: (err) => {
       setError(err.getUserMessage());
@@ -211,214 +213,267 @@ export default function AddEditProductScreen() {
   }
 
   return (
-    <div className='flex-1 space-y-10 overflow-x-hidden'>
-      <div className='flex-1 p-4'>
-        {/* Error Alert */}
-        {error && (
-          <Alert
-            severity='error'
-            className='mb-4'
-            onClose={() => setError(null)}
-          >
-            {error}
-          </Alert>
-        )}
+    <>
+      <div className='flex-1 space-y-10 overflow-x-hidden'>
+        <div className='flex-1 p-4'>
+          {/* Error Alert */}
+          {error && (
+            <Alert
+              severity='error'
+              className='mb-4'
+              onClose={() => setError(null)}
+            >
+              {error}
+            </Alert>
+          )}
 
-        <div className='flex gap-16'>
-          <div>
-            <AppCard className='p-5 bg-surface!'>
-              <h1 className='text-xl font-medium mb-3'>Upload Product Image</h1>
-              <Divider className='mb-5!' />
-              <ProductImageUpload
-                images={productImages}
-                onImagesChange={setProductImages}
-              />
-            </AppCard>
-          </div>
-          <div className='w-full'>
-            <AppCard className='p-5 bg-surface! space-y-10'>
-              <div>
+          <div className='flex gap-16'>
+            <div>
+              <AppCard className='p-5 bg-surface!'>
                 <h1 className='text-xl font-medium mb-3'>
-                  Product Basic Details
+                  Upload Product Image
                 </h1>
                 <Divider className='mb-5!' />
-                <div className='flex flex-col gap-5 mb-5'>
-                  <AppTextField
-                    label='Product Name'
-                    value={formData.productName}
-                    onChange={(e) => updateField("productName", e.target.value)}
-                    required
-                  />
-                  <AppSelect
-                    label='Product Category'
-                    options={CATEGORY_OPTIONS}
-                    value={formData.productCategory}
-                    onChange={(value: string) =>
-                      updateField("productCategory", value)
-                    }
-                  />
-                  <AppTextField
-                    label='Product Description'
-                    multiline
-                    minRows={5}
-                    value={formData.productDescription}
-                    onChange={(e) =>
-                      updateField("productDescription", e.target.value)
-                    }
-                    required
-                  />
-                </div>
-              </div>
-              <div>
-                <h1 className='text-xl font-medium mb-3'>
-                  Additional Product Attributes
-                </h1>
-                <Divider className='mb-5!' />
-                <div className='grid grid-cols-2 gap-5 mb-5'>
-                  <AppSelect
-                    label='Form'
-                    options={FORM_OPTIONS}
-                    value={formData.form}
-                    onChange={(value: string) => updateField("form", value)}
-                  />
-                  <AppSelect
-                    label='Safety'
-                    options={SAFETY_OPTIONS}
-                    value={formData.safety}
-                    onChange={(value: string) => updateField("safety", value)}
-                  />
-                  <AppSelect
-                    label='UOM'
-                    options={UOM_OPTIONS}
-                    value={formData.uom}
-                    onChange={(value: string) => updateField("uom", value)}
-                  />
+                <ProductImageUpload
+                  images={productImages}
+                  onImagesChange={setProductImages}
+                />
+              </AppCard>
+            </div>
+            <div className='w-full'>
+              <AppCard className='p-5 bg-surface! space-y-10'>
+                <div>
+                  <h1 className='text-xl font-medium mb-3'>
+                    Product Basic Details
+                  </h1>
+                  <Divider className='mb-5!' />
+                  <div className='flex flex-col gap-5 mb-5'>
+                    <AppTextField
+                      label='Product Name'
+                      value={formData.productName}
+                      onChange={(e) =>
+                        updateField("productName", e.target.value)
+                      }
+                      required
+                    />
+                    <AppSelect
+                      label='Product Category'
+                      options={CATEGORY_OPTIONS}
+                      value={formData.productCategory}
+                      onChange={(value: string) =>
+                        updateField("productCategory", value)
+                      }
+                    />
+                    <AppTextField
+                      label='Product Description'
+                      multiline
+                      minRows={5}
+                      value={formData.productDescription}
+                      onChange={(e) =>
+                        updateField("productDescription", e.target.value)
+                      }
+                      required
+                    />
+                  </div>
                 </div>
                 <div>
-                  <AppCheckbox
-                    label='Eco Friendly'
-                    checked={formData.ecoFriendly}
-                    onChange={(e) =>
-                      updateField("ecoFriendly", e.target.checked)
-                    }
-                  />
-                  <AppCheckbox
-                    label='Handle with Care'
-                    checked={formData.handleWithCare}
-                    onChange={(e) =>
-                      updateField("handleWithCare", e.target.checked)
-                    }
+                  <h1 className='text-xl font-medium mb-3'>
+                    Additional Product Attributes
+                  </h1>
+                  <Divider className='mb-5!' />
+                  <div className='grid grid-cols-2 gap-5 mb-5'>
+                    <AppSelect
+                      label='Form'
+                      options={FORM_OPTIONS}
+                      value={formData.form}
+                      onChange={(value: string) => updateField("form", value)}
+                    />
+                    <AppSelect
+                      label='Safety'
+                      options={SAFETY_OPTIONS}
+                      value={formData.safety}
+                      onChange={(value: string) => updateField("safety", value)}
+                    />
+                    <AppSelect
+                      label='UOM'
+                      options={UOM_OPTIONS}
+                      value={formData.uom}
+                      onChange={(value: string) => updateField("uom", value)}
+                    />
+                  </div>
+                  <div>
+                    <AppCheckbox
+                      label='Eco Friendly'
+                      checked={formData.ecoFriendly}
+                      onChange={(e) =>
+                        updateField("ecoFriendly", e.target.checked)
+                      }
+                    />
+                    <AppCheckbox
+                      label='Handle with Care'
+                      checked={formData.handleWithCare}
+                      onChange={(e) =>
+                        updateField("handleWithCare", e.target.checked)
+                      }
+                    />
+                  </div>
+                </div>
+                <div>
+                  <h1 className='text-xl font-medium mb-3'>
+                    Pricing and Rate Settings
+                  </h1>
+                  <Divider className='mb-5!' />
+                  <div className='grid grid-cols-2 gap-5 mb-5'>
+                    <AppTextField
+                      label='Rate per Unit'
+                      type='number'
+                      value={formData.ratePerUnit || ""}
+                      onChange={(e) =>
+                        updateField("ratePerUnit", Number(e.target.value))
+                      }
+                    />
+                    <AppTextField
+                      label='Market Selling Price'
+                      type='number'
+                      value={formData.marketSellingPrice || ""}
+                      onChange={(e) =>
+                        updateField(
+                          "marketSellingPrice",
+                          Number(e.target.value)
+                        )
+                      }
+                    />
+                    <AppTextField
+                      label='Sale Profit Margin (%)'
+                      type='number'
+                      value={formData.saleProfitMargin || ""}
+                      onChange={(e) =>
+                        updateField("saleProfitMargin", Number(e.target.value))
+                      }
+                    />
+                  </div>
+                </div>
+                <div>
+                  <h1 className='text-xl font-medium mb-3'>
+                    Other Details (optional)
+                  </h1>
+                  <Divider className='mb-5!' />
+                  <div className='grid grid-cols-2 gap-5 mb-5'>
+                    <AppTextField
+                      label='Product Type'
+                      value={formData.productType || ""}
+                      onChange={(e) =>
+                        updateField("productType", e.target.value)
+                      }
+                    />
+                    <AppTextField
+                      label='Product Size (L*W*H)'
+                      value={formData.productSize || ""}
+                      onChange={(e) =>
+                        updateField("productSize", e.target.value)
+                      }
+                    />
+                    <AppTextField
+                      label='Product Variant'
+                      value={formData.productVariant || ""}
+                      onChange={(e) =>
+                        updateField("productVariant", e.target.value)
+                      }
+                    />
+                    <AppTextField
+                      label='Product Color'
+                      value={formData.productColor || ""}
+                      onChange={(e) =>
+                        updateField("productColor", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+                <div>
+                  <h1 className='text-xl font-medium mb-3'>
+                    Upload Product Brochure (optional)
+                  </h1>
+                  <Divider className='mb-5!' />
+                  <BrochureUpload
+                    file={brochureFile}
+                    onFileChange={setBrochureFile}
                   />
                 </div>
-              </div>
-              <div>
-                <h1 className='text-xl font-medium mb-3'>
-                  Pricing and Rate Settings
-                </h1>
-                <Divider className='mb-5!' />
-                <div className='grid grid-cols-2 gap-5 mb-5'>
-                  <AppTextField
-                    label='Rate per Unit'
-                    type='number'
-                    value={formData.ratePerUnit || ""}
-                    onChange={(e) =>
-                      updateField("ratePerUnit", Number(e.target.value))
-                    }
-                  />
-                  <AppTextField
-                    label='Market Selling Price'
-                    type='number'
-                    value={formData.marketSellingPrice || ""}
-                    onChange={(e) =>
-                      updateField("marketSellingPrice", Number(e.target.value))
-                    }
-                  />
-                  <AppTextField
-                    label='Sale Profit Margin (%)'
-                    type='number'
-                    value={formData.saleProfitMargin || ""}
-                    onChange={(e) =>
-                      updateField("saleProfitMargin", Number(e.target.value))
-                    }
-                  />
-                </div>
-              </div>
-              <div>
-                <h1 className='text-xl font-medium mb-3'>
-                  Other Details (optional)
-                </h1>
-                <Divider className='mb-5!' />
-                <div className='grid grid-cols-2 gap-5 mb-5'>
-                  <AppTextField
-                    label='Product Type'
-                    value={formData.productType || ""}
-                    onChange={(e) => updateField("productType", e.target.value)}
-                  />
-                  <AppTextField
-                    label='Product Size (L*W*H)'
-                    value={formData.productSize || ""}
-                    onChange={(e) => updateField("productSize", e.target.value)}
-                  />
-                  <AppTextField
-                    label='Product Variant'
-                    value={formData.productVariant || ""}
-                    onChange={(e) =>
-                      updateField("productVariant", e.target.value)
-                    }
-                  />
-                  <AppTextField
-                    label='Product Color'
-                    value={formData.productColor || ""}
-                    onChange={(e) =>
-                      updateField("productColor", e.target.value)
-                    }
-                  />
-                </div>
-              </div>
-              <div>
-                <h1 className='text-xl font-medium mb-3'>
-                  Upload Product Brochure (optional)
-                </h1>
-                <Divider className='mb-5!' />
-                <BrochureUpload
-                  file={brochureFile}
-                  onFileChange={setBrochureFile}
-                />
-              </div>
-            </AppCard>
+              </AppCard>
+            </div>
+          </div>
+        </div>
+
+        {/* Submit Button */}
+        <div className='absolute bottom-0 left-0 right-0 flex justify-between items-center gap-5 p-5 bg-white z-1 ml-64'>
+          <AppButton
+            onClick={() => navigate("/admin/products")}
+            disabled={isPending}
+          >
+            Cancel
+          </AppButton>
+          <div className='flex gap-5'>
+            <AppButton variant='outlined' disabled={isPending}>
+              Save as draft
+            </AppButton>
+            <AppButton
+              variant='contained'
+              onClick={handleSubmit}
+              disabled={isPending}
+              startIcon={isPending ? <CircularProgress size={20} /> : undefined}
+            >
+              {isPending
+                ? isEditMode
+                  ? "Updating..."
+                  : "Creating..."
+                : isEditMode
+                ? "Update Product"
+                : "Create Product"}
+            </AppButton>
           </div>
         </div>
       </div>
 
-      {/* Submit Button */}
-      <div className='absolute bottom-0 left-0 right-0 flex justify-between items-center gap-5 p-5 bg-white z-1 ml-64'>
-        <AppButton
-          onClick={() => navigate("/admin/products")}
-          disabled={isPending}
-        >
-          Cancel
-        </AppButton>
-        <div className='flex gap-5'>
-          <AppButton variant='outlined' disabled={isPending}>
-            Save as draft
-          </AppButton>
-          <AppButton
-            variant='contained'
-            onClick={handleSubmit}
-            disabled={isPending}
-            startIcon={isPending ? <CircularProgress size={20} /> : undefined}
-          >
-            {isPending
-              ? isEditMode
-                ? "Updating..."
-                : "Creating..."
-              : isEditMode
-              ? "Update Product"
-              : "Create Product"}
-          </AppButton>
-        </div>
-      </div>
-    </div>
+      {isProductSaved && (
+        <AppAlertDialog
+          open={isProductSaved}
+          onClose={() => setIsProductSaved(false)}
+          title={
+            <>
+              <img src={icons.successCheck} alt='' />
+              <h5 className='text-base font-medium'>
+                Product Added Successfully
+              </h5>
+            </>
+          }
+          content={
+            <p className='text-sm text-on-surface-variant'>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+              enim ad minim veniam
+            </p>
+          }
+          actions={[
+            <>
+              <AppButton
+                variant='outlined'
+                className='rounded-lg! py-4! px-14!'
+                onClick={() => setIsProductSaved(false)}
+              >
+                Cancel
+              </AppButton>
+              <AppButton
+                variant='contained'
+                className='rounded-lg! py-4! px-14!'
+                onClick={() => navigate("/admin/products")}
+              >
+                Home
+              </AppButton>
+            </>,
+          ]}
+        />
+      )}
+    </>
   );
 }
 
