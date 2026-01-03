@@ -5,6 +5,7 @@ import {
   OutboxOutlined,
   CloseOutlined,
   InsertDriveFileOutlined,
+  Add,
 } from "@mui/icons-material";
 import AppTextField from "../../../components/ui/AppTextField";
 import AppSelect from "../../../components/ui/AppSelect";
@@ -535,7 +536,7 @@ function ProductImageUpload({
         </div>
       </AppDropZone>
 
-      <ImageThumbnailGrid images={images} onRemove={removeImage} />
+      <ImageThumbnailGrid images={images} onRemove={removeImage} isEditMode />
     </div>
   );
 }
@@ -549,10 +550,12 @@ function ImageThumbnailGrid({
   images,
   onRemove,
   placeholderCount = 4,
+  isEditMode = false,
 }: {
   images: string[];
   onRemove: (index: number) => void;
   placeholderCount?: number;
+  isEditMode?: boolean;
 }) {
   const emptySlots = Math.max(0, placeholderCount - images.length);
 
@@ -583,8 +586,15 @@ function ImageThumbnailGrid({
       {Array.from({ length: emptySlots }).map((_, index) => (
         <div
           key={`empty-${index}`}
-          className='w-20 h-20 shrink-0 rounded-lg bg-primary/10'
-        />
+          className={`w-20 h-20 shrink-0 rounded-lg bg-primary/10 
+          ${
+            isEditMode &&
+            "flex items-center justify-center border border-primary border-dashed"
+          }
+           `}
+        >
+          {isEditMode && <Add className='text-primary text-6xl!' />}
+        </div>
       ))}
     </div>
   );
