@@ -414,11 +414,16 @@ export default function AddEditProductScreen() {
             Cancel
           </AppButton>
           <div className='flex gap-5'>
-            <AppButton variant='outlined' disabled={isPending}>
+            <AppButton
+              variant='outlined'
+              className='py-4! px-10!'
+              disabled={isPending}
+            >
               Save as draft
             </AppButton>
             <AppButton
               variant='contained'
+              className='py-4! px-10!'
               onClick={handleSubmit}
               disabled={isPending}
               startIcon={isPending ? <CircularProgress size={20} /> : undefined}
